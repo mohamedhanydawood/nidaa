@@ -1,0 +1,70 @@
+{
+  "name": "nextjs-electron-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "build-electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"cross-env NODE_ENV=development next dev\" \"wait-on http://localhost:3000 && npm run electron-dev\"",
+    "electron-dev": "concurrently \"tsc -p electron/tsconfig.json --watch\" \"cross-env NODE_ENV=development electron .\"",
+    "build": "next build && tsc -p electron/tsconfig.json",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder",
+    "lint": "eslint ."
+  },
+  "description": "A Next.js and Electron desktop application starter",
+  "author": "Your Name",
+  "dependencies": {
+    "next": "16.0.1",
+    "node-key-sender": "^1.0.11",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/electron": "^1.6.12",
+    "@types/node": "^20.19.24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.1",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.nextjs.electronstarter",
+    "productName": "NextJSElectronStarter",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "build-electron/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false
+    }
+  }
+}
