@@ -12,6 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "../build-electron"
   },
-  "include": ["electron", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["electron", "next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cts"],
   "exclude": ["node_modules"]
 }

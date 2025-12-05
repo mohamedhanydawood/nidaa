@@ -1,10 +1,8 @@
 import { Notification } from "electron";
-import * as keySender from "node-key-sender";
 import {
-  DaySchedule,
-  PrayerKey,
+  type DaySchedule,
+  type PrayerKey,
   fetchTodayScheduleByCity,
-  getNextPrayer,
   msUntil,
   setSafeTimeout,
 } from "./prayerService.js";
@@ -33,6 +31,10 @@ export class PrayerScheduler {
     this.planTimers();
     // Re-fetch at midnight
     this.planMidnightRefresh();
+  }
+
+  getTodaySchedule(): DaySchedule | null {
+    return this.schedule;
   }
 
   private clearTimers() {
@@ -74,7 +76,7 @@ export class PrayerScheduler {
 
       // On-time alert + optional auto-pause
       const ms = msUntil(at);
-      const t = setSafeTimeout(() => this.onPrayerTime(key, at), ms);
+      const t = setSafeTimeout(() => this.onPrayerTime(key), ms);
       this.timers.push(t);
     }
   }
@@ -98,26 +100,12 @@ export class PrayerScheduler {
     new Notification({ title, body, silent: true }).show();
   }
 
-  private async onPrayerTime(key: PrayerKey, at: Date) {
+  private async onPrayerTime(key: PrayerKey) {
     const title = "نداء";
     const body = `حان الآن موعد صلاة ${this.arKey(key)}`;
     new Notification({ title, body, silent: false }).show();
-
-    if (this.config.autoPauseAtAdhan) {
-      try {
-        // Toggle Play/Pause on system media controls
-        await keySender.sendKey("playpause");
-      } catch {}
-
-      if (this.config.autoResumeAfterMs && this.config.autoResumeAfterMs > 0) {
-        const t = setSafeTimeout(async () => {
-          try {
-            await keySender.sendKey("playpause");
-          } catch {}
-        }, this.config.autoResumeAfterMs);
-        this.timers.push(t);
-      }
-    }
+    
+    // Auto-pause feature removed per user request
 
     // After triggering, plan from now again to cover overlaps/late starts
     this.planTimers();
@@ -146,5 +134,3 @@ export class PrayerScheduler {
     return `${h}:${m}`;
   }
 }
-
-

@@ -55,6 +55,7 @@ export async function fetchTodayScheduleByCity(params: {
   if (!res.ok) {
     throw new Error(`Aladhan API error ${res.status}`);
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const json = (await res.json()) as any;
   const timings: PrayerTimings = json?.data?.timings;
   const metaTzOffset: number | undefined = json?.data?.meta?.timezone
@@ -73,29 +74,13 @@ export async function fetchTodayScheduleByCity(params: {
   return { dateISO: todayISO, timings: mapped };
 }
 
-export function getNextPrayer(
-  now: Date,
-  schedule: DaySchedule
-): {
-  key: PrayerKey | null;
-  at: Date | null;
-} {
-  const entries = Object.entries(schedule.timings) as Array<[PrayerKey, Date]>;
-  const upcoming = entries
-    .filter(([, at]) => at.getTime() > now.getTime())
-    .sort((a, b) => a[1].getTime() - b[1].getTime());
-  if (upcoming.length > 0) {
-    return { key: upcoming[0][0], at: upcoming[0][1] };
-  }
-  return { key: null, at: null };
-}
-
-export function msUntil(d: Date): number {
+function msUntil(d: Date): number {
   return Math.max(0, d.getTime() - Date.now());
 }
 
-export function setSafeTimeout(fn: () => void, ms: number) {
+function setSafeTimeout(fn: () => void, ms: number) {
   // Node's setTimeout with cap for very long durations if needed later
   return setNodeTimeout(fn, ms);
 }
 
+export { msUntil, setSafeTimeout };

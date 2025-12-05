@@ -1,123 +1,202 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Settings = {
   city: string;
   country: string;
   method: number;
   madhab: number;
-  preAlertMinutes: number;
-  autoPauseAtAdhan: boolean;
-  autoResumeAfterMs: number | null;
-  timeFormat?: "12" | "24";
+  notifyBefore: number;
+  timeFormat: "12" | "24";
 };
 
 const methods: Array<{ id: number; name: string }> = [
-  { id: 5, name: "Egyptian General Authority of Survey" },
+  { id: 5, name: "Egyptian General Authority" },
   { id: 2, name: "Islamic Society of North America" },
   { id: 3, name: "Muslim World League" },
-  { id: 4, name: "Umm Al-Qura University, Makkah" },
-  { id: 1, name: "University of Islamic Sciences, Karachi" },
+  { id: 4, name: "Umm Al-Qura, Makkah" },
 ];
 
 const countries: Array<{ code: string; name: string; cities: string[] }> = [
-  {
-    code: "EG",
-    name: "مصر",
-    cities: ["Cairo", "Alexandria", "Giza", "Mansoura"],
+  { 
+    code: "EG", 
+    name: "مصر", 
+    cities: [
+      "Cairo", "Alexandria", "Giza", "Shubra El-Kheima", "Port Said",
+      "Suez", "Luxor", "Mansoura", "El-Mahalla El-Kubra", "Tanta",
+      "Asyut", "Ismailia", "Faiyum", "Zagazig", "Aswan", "Damietta"
+    ] 
+  },
+  { 
+    code: "SA", 
+    name: "السعودية", 
+    cities: [
+      "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar",
+      "Tabuk", "Buraydah", "Khamis Mushait", "Hail", "Al-Ahsa",
+      "Hofuf", "Jubail", "Dhahran", "Yanbu", "Abha"
+    ] 
+  },
+  { 
+    code: "AE", 
+    name: "الإمارات", 
+    cities: [
+      "Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman",
+      "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"
+    ] 
   },
   {
-    code: "SA",
-    name: "السعودية",
-    cities: ["Makkah", "Madinah", "Riyadh", "Jeddah"],
+    code: "KW",
+    name: "الكويت",
+    cities: ["Kuwait City", "Al Ahmadi", "Hawally", "Salmiya", "Farwaniya"]
   },
-  { code: "AE", name: "الإمارات", cities: ["Dubai", "Abu Dhabi", "Sharjah"] },
-  { code: "TR", name: "تركيا", cities: ["Istanbul", "Ankara", "Konya"] },
+  {
+    code: "QA",
+    name: "قطر",
+    cities: ["Doha", "Al Wakrah", "Al Rayyan", "Umm Salal", "Al Khor"]
+  },
+  {
+    code: "BH",
+    name: "البحرين",
+    cities: ["Manama", "Muharraq", "Riffa", "Hamad Town", "Isa Town"]
+  },
+  {
+    code: "OM",
+    name: "عمان",
+    cities: ["Muscat", "Salalah", "Sohar", "Nizwa", "Sur"]
+  },
+  {
+    code: "JO",
+    name: "الأردن",
+    cities: ["Amman", "Zarqa", "Irbid", "Aqaba", "Madaba", "Salt"]
+  },
+  {
+    code: "LB",
+    name: "لبنان",
+    cities: ["Beirut", "Tripoli", "Sidon", "Tyre", "Nabatieh", "Zahle"]
+  },
+  {
+    code: "SY",
+    name: "سوريا",
+    cities: ["Damascus", "Aleppo", "Homs", "Latakia", "Hama", "Deir ez-Zor"]
+  },
+  {
+    code: "IQ",
+    name: "العراق",
+    cities: ["Baghdad", "Basra", "Mosul", "Erbil", "Najaf", "Karbala", "Sulaymaniyah"]
+  },
+  {
+    code: "PS",
+    name: "فلسطين",
+    cities: ["Jerusalem", "Gaza", "Ramallah", "Hebron", "Nablus", "Bethlehem"]
+  },
+  {
+    code: "YE",
+    name: "اليمن",
+    cities: ["Sanaa", "Aden", "Taiz", "Hodeidah", "Ibb", "Mukalla"]
+  },
+  {
+    code: "MA",
+    name: "المغرب",
+    cities: ["Casablanca", "Rabat", "Fes", "Marrakesh", "Tangier", "Agadir"]
+  },
+  {
+    code: "DZ",
+    name: "الجزائر",
+    cities: ["Algiers", "Oran", "Constantine", "Batna", "Setif", "Annaba"]
+  },
+  {
+    code: "TN",
+    name: "تونس",
+    cities: ["Tunis", "Sfax", "Sousse", "Kairouan", "Bizerte", "Gabes"]
+  },
+  {
+    code: "LY",
+    name: "ليبيا",
+    cities: ["Tripoli", "Benghazi", "Misrata", "Bayda", "Zawiya"]
+  },
+  {
+    code: "SD",
+    name: "السودان",
+    cities: ["Khartoum", "Omdurman", "Port Sudan", "Kassala", "Nyala"]
+  },
 ];
 
 export default function SettingsPage() {
-  const [cfg, setCfg] = useState<Settings | null>({
+  const [cfg, setCfg] = useState<Settings>({
     city: "Cairo",
-    country: "Egypt",
+    country: "مصر",
     method: 5,
     madhab: 1,
-    preAlertMinutes: 5,
-    autoPauseAtAdhan: true,
-    autoResumeAfterMs: 7 * 60 * 1000,
+    notifyBefore: 5,
     timeFormat: "24",
   });
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [customCity, setCustomCity] = useState("");
 
   useEffect(() => {
-    (async () => {
+    const fetchSettings = async () => {
       try {
-        const current = await (window as any).electron?.settings?.get?.();
-        if (current) setCfg(current);
+        if (window.electron?.getSettings) {
+          const settings = await window.electron.getSettings();
+          setCfg(settings);
+        }
       } catch {
-        // stay with defaults if Electron bridge not present
+        console.log("Using defaults");
       }
-    })();
+    };
+    fetchSettings();
   }, []);
-
-  if (!cfg) {
-    return (
-      <div className="p-6 text-zinc-700 dark:text-zinc-200">
-        تحميل الإعدادات…
-      </div>
-    );
-  }
 
   async function save() {
     setSaving(true);
+    console.log("Saving settings...", cfg);
     try {
-      const bridge = (window as any).electron?.settings;
-      try {
-        const next = await bridge?.set?.(cfg);
-        if (!next) throw new Error("no-bridge");
-        setCfg(next ?? cfg);
-        setSavedAt(Date.now());
-      } catch {
-        alert("ميزة الحفظ تعمل داخل تطبيق سطح المكتب فقط.");
+      if (window.electron?.updateSettings) {
+        const result = await window.electron.updateSettings(cfg);
+        console.log("Settings saved successfully:", result);
+        alert("✓ تم حفظ الإعدادات");
+      } else {
+        console.error("window.electron.updateSettings is not available");
+        alert("خطأ: التطبيق يعمل في وضع الويب. استخدم Electron.");
       }
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("خطأ في الحفظ");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen bg-linear-to-b from-zinc-50 to-zinc-100 p-6 text-right dark:from-zinc-900 dark:to-black"
-    >
-      <div className="mx-auto max-w-3xl rounded-2xl bg-white p-6 shadow-sm dark:bg-zinc-800">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-black dark:text-white">
-            الإعدادات
-          </h1>
-          <button
-            onClick={() => history.back()}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-600 dark:text-zinc-200"
-          >
-            رجوع
-          </button>
+    <div dir="rtl" className="h-screen bg-zinc-900 text-white overflow-hidden flex flex-col">
+      {/* Header */}
+      <header className="bg-zinc-800 border-b border-zinc-700 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🕌</span>
+          <h1 className="text-xl font-bold">نداء - الإعدادات</h1>
         </div>
+        <Link
+          href="/"
+          className="px-3 py-1.5 text-sm rounded-md hover:bg-zinc-700 transition-colors"
+        >
+          ← رجوع
+        </Link>
+      </header>
 
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              الدولة
-            </label>
+      {/* Content */}
+      <main className="flex-1 p-6 overflow-y-auto">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {/* Country */}
+          <div className="bg-zinc-800 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-zinc-300 mb-2">الدولة</label>
             <select
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               value={cfg.country}
               onChange={(e) => {
                 const country = e.target.value;
-                const defCity =
-                  countries.find(
-                    (c) => c.name === country || c.code === country
-                  )?.cities?.[0] ?? cfg.city;
+                const defCity = countries.find((c) => c.name === country)?.cities[0] || cfg.city;
                 setCfg({ ...cfg, country, city: defCity });
               }}
             >
@@ -128,36 +207,53 @@ export default function SettingsPage() {
               ))}
             </select>
           </div>
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              المدينة
-            </label>
+
+          {/* City */}
+          <div className="bg-zinc-800 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-zinc-300 mb-2">المدينة</label>
             <select
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none mb-2"
               value={cfg.city}
-              onChange={(e) => setCfg({ ...cfg, city: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "__custom__") {
+                  setCustomCity("");
+                } else {
+                  setCfg({ ...cfg, city: value });
+                  setCustomCity("");
+                }
+              }}
             >
-              {(
-                countries.find(
-                  (c) => c.name === cfg.country || c.code === cfg.country
-                )?.cities || [cfg.city]
-              ).map((city) => (
+              {(countries.find((c) => c.name === cfg.country)?.cities || []).map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
               ))}
+              <option value="__custom__">مدينة أخرى (اكتبها يدوياً)</option>
             </select>
+            
+            {/* Custom city input */}
+            {(cfg.city === "__custom__" || customCity !== "") && (
+              <input
+                type="text"
+                placeholder="اكتب اسم المدينة بالإنجليزية"
+                className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                value={customCity}
+                onChange={(e) => {
+                  setCustomCity(e.target.value);
+                  setCfg({ ...cfg, city: e.target.value });
+                }}
+              />
+            )}
           </div>
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              طريقة الحساب
-            </label>
+
+          {/* Method */}
+          <div className="bg-zinc-800 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-zinc-300 mb-2">طريقة الحساب</label>
             <select
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
+              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               value={cfg.method}
-              onChange={(e) =>
-                setCfg({ ...cfg, method: Number(e.target.value) })
-              }
+              onChange={(e) => setCfg({ ...cfg, method: Number(e.target.value) })}
             >
               {methods.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -166,93 +262,69 @@ export default function SettingsPage() {
               ))}
             </select>
           </div>
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              عرض الوقت
-            </label>
-            <select
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
-              value={cfg.timeFormat ?? "24"}
-              onChange={(e) =>
-                setCfg({ ...cfg, timeFormat: e.target.value as any })
-              }
-            >
-              <option value="24">24 ساعة</option>
-              <option value="12">12 ساعة</option>
-            </select>
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              تنبيه قبلي (دقائق)
-            </label>
-            <input
-              type="number"
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
-              value={cfg.preAlertMinutes}
-              onChange={(e) =>
-                setCfg({ ...cfg, preAlertMinutes: Number(e.target.value) })
-              }
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              id="autoPause"
-              type="checkbox"
-              checked={cfg.autoPauseAtAdhan}
-              onChange={(e) =>
-                setCfg({ ...cfg, autoPauseAtAdhan: e.target.checked })
-              }
-            />
-            <label
-              htmlFor="autoPause"
-              className="text-sm text-zinc-600 dark:text-zinc-300"
-            >
-              إيقاف أي صوت تلقائيًا عند الأذان
-            </label>
-          </div>
-          <div className="grid gap-2">
-            <label className="text-sm text-zinc-600 dark:text-zinc-300">
-              استئناف بعد (ثواني) اختياري
-            </label>
-            <input
-              type="number"
-              className="rounded-md border border-zinc-300 p-2 dark:border-zinc-600 dark:bg-zinc-900"
-              value={
-                cfg.autoResumeAfterMs
-                  ? Math.round(cfg.autoResumeAfterMs / 1000)
-                  : 0
-              }
-              onChange={(e) => {
-                const sec = Number(e.target.value);
-                setCfg({
-                  ...cfg,
-                  autoResumeAfterMs: sec > 0 ? sec * 1000 : null,
-                });
-              }}
-            />
-          </div>
-        </div>
 
-        <div className="mt-6 flex items-center gap-3">
-          <button
-            className="rounded-md bg-black px-4 py-2 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            onClick={save}
-            disabled={saving}
-          >
-            {saving ? "يحفظ…" : "حفظ"}
-          </button>
-          {savedAt && (
-            <span className="text-sm text-green-600 dark:text-green-400">
-              تم الحفظ
-            </span>
-          )}
-          {!savedAt && (
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              ستُطبَّق الإعدادات فورًا على الجدولة
-            </span>
-          )}
+          {/* Notify Before */}
+          <div className="bg-zinc-800 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-zinc-300 mb-2">
+              التنبيه قبل الأذان (بالدقائق)
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="30"
+              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              value={cfg.notifyBefore}
+              onChange={(e) => setCfg({ ...cfg, notifyBefore: Number(e.target.value) })}
+            />
+          </div>
+
+          {/* Time Format */}
+          <div className="bg-zinc-800 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-zinc-300 mb-2">صيغة الوقت</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="timeFormat"
+                  value="24"
+                  checked={cfg.timeFormat === "24"}
+                  onChange={(e) => setCfg({ ...cfg, timeFormat: e.target.value as "24" })}
+                  className="w-4 h-4"
+                />
+                <span>24 ساعة</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="timeFormat"
+                  value="12"
+                  checked={cfg.timeFormat === "12"}
+                  onChange={(e) => setCfg({ ...cfg, timeFormat: e.target.value as "12" })}
+                  className="w-4 h-4"
+                />
+                <span>12 ساعة</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex gap-3">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-md font-semibold disabled:bg-zinc-600 transition-colors"
+            >
+              {saving ? "جاري الحفظ..." : "حفظ"}
+            </button>
+            <Link
+              href="/"
+              className="px-6 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-md transition-colors text-center"
+            >
+              إلغاء
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
