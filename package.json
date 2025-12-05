@@ -43,6 +43,7 @@
   "build": {
     "appId": "com.nidaa.app",
     "productName": "Nidaa",
+    "icon": "public/icon.ico",
     "directories": {
       "buildResources": "assets",
       "output": "dist"

@@ -63,6 +63,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     autoHideMenuBar: true, // إخفاء شريط القوائم
+    icon: path.join(process.cwd(), 'public/icon.ico'), // أيقونة التطبيق
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
     },

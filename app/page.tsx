@@ -44,6 +44,7 @@ export default function Home() {
       Isha: false,
     },
     sunrise: undefined as string | undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hijri: undefined as any,
   });
 
@@ -204,9 +205,10 @@ export default function Home() {
   return (
     <div dir="rtl" className="h-screen text-foreground overflow-hidden flex flex-col ">
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
+      <header className="bg-card px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🕌</span>
+          {/* <span className="text-2xl">🕌</span> */}
+          <Image src="/icon.ico" alt="Nidaa Logo" width={50} height={50} />
           <div>
             <h1 className="text-xl font-bold">نداء</h1>
             <p className="text-xs text-muted">

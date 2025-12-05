@@ -24,13 +24,13 @@ export default function RootLayout({
 
         {/* Content wrapper */}
         <div className="relative z-10">
-          <img
+          {/* <img
             src="/background.jpg"
             alt="Header Background"
             width={1920}
             height={200}
-            className="absolute top-0 left-0 w-full h-full object-cover z-[-1] opacity-0 pointer-events-none "
-          />
+            className="absolute top-0 left-0 w-full h-full object-cover z-[-1] opacity-25 pointer-events-none "
+          /> */}
           {children}
         </div>
       </body>
