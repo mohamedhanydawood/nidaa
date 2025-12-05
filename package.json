@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-electron-starter",
+  "name": "nidaa",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,15 +12,15 @@
     "dist": "npm run build && electron-builder",
     "lint": "eslint ."
   },
-  "description": "A Next.js and Electron desktop application starter",
+  "description": "A desktop application to notify you of Islamic prayer times based on your location.",
   "author": "Your Name",
   "dependencies": {
     "electron-store": "^11.0.2",
     "luxon": "^3.7.2",
-    "next": "16.0.1",
+    "next": "^16.0.7",
     "node-key-sender": "^1.0.11",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -34,15 +34,15 @@
     "electron": "^39.0.0",
     "electron-builder": "^26.0.12",
     "eslint": "^9",
-    "eslint-config-next": "16.0.1",
+    "eslint-config-next": "^16.0.7",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "wait-on": "^9.0.1"
   },
   "build": {
-    "appId": "com.nextjs.electronstarter",
-    "productName": "NextJSElectronStarter",
+    "appId": "com.nidaa.app",
+    "productName": "Nidaa",
     "directories": {
       "buildResources": "assets",
       "output": "dist"

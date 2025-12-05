@@ -170,16 +170,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div dir="rtl" className="h-screen bg-zinc-900 text-white overflow-hidden flex flex-col">
+    <div dir="rtl" className="h-screen  text-foreground overflow-hidden flex flex-col">
       {/* Header */}
-      <header className="bg-zinc-800 border-b border-zinc-700 px-6 py-3 flex items-center justify-between">
+      <header className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-2xl">🕌</span>
           <h1 className="text-xl font-bold">نداء - الإعدادات</h1>
         </div>
         <Link
           href="/"
-          className="px-3 py-1.5 text-sm rounded-md hover:bg-zinc-700 transition-colors"
+          className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ← رجوع
         </Link>
@@ -189,10 +189,10 @@ export default function SettingsPage() {
       <main className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Country */}
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-zinc-300 mb-2">الدولة</label>
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-2">الدولة</label>
             <select
-              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
               value={cfg.country}
               onChange={(e) => {
                 const country = e.target.value;
@@ -209,10 +209,10 @@ export default function SettingsPage() {
           </div>
 
           {/* City */}
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-zinc-300 mb-2">المدينة</label>
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-2">المدينة</label>
             <select
-              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none mb-2"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none mb-2"
               value={cfg.city}
               onChange={(e) => {
                 const value = e.target.value;
@@ -237,7 +237,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 placeholder="اكتب اسم المدينة بالإنجليزية"
-                className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
                 value={customCity}
                 onChange={(e) => {
                   setCustomCity(e.target.value);
@@ -248,10 +248,10 @@ export default function SettingsPage() {
           </div>
 
           {/* Method */}
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-zinc-300 mb-2">طريقة الحساب</label>
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-2">طريقة الحساب</label>
             <select
-              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
               value={cfg.method}
               onChange={(e) => setCfg({ ...cfg, method: Number(e.target.value) })}
             >
@@ -264,23 +264,23 @@ export default function SettingsPage() {
           </div>
 
           {/* Notify Before */}
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-zinc-300 mb-2">
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-2">
               التنبيه قبل الأذان (بالدقائق)
             </label>
             <input
               type="number"
               min="0"
               max="30"
-              className="w-full p-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
               value={cfg.notifyBefore}
               onChange={(e) => setCfg({ ...cfg, notifyBefore: Number(e.target.value) })}
             />
           </div>
 
           {/* Time Format */}
-          <div className="bg-zinc-800 p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-zinc-300 mb-2">صيغة الوقت</label>
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-2">صيغة الوقت</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -312,13 +312,13 @@ export default function SettingsPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-md font-semibold disabled:bg-zinc-600 transition-colors"
+              className="px-6 py-2 bg-accent hover:bg-accent rounded-md font-semibold disabled:bg-input transition-colors"
             >
               {saving ? "جاري الحفظ..." : "حفظ"}
             </button>
             <Link
               href="/"
-              className="px-6 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-md transition-colors text-center"
+              className="px-6 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-center"
             >
               إلغاء
             </Link>

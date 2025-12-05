@@ -13,6 +13,10 @@ contextBridge.exposeInMainWorld("electron", {
   markPrayerDone: (prayerName: string) =>
     ipcRenderer.invoke("prayer:mark", prayerName),
 
+  // Statistics
+  getStatistics: () => ipcRenderer.invoke("statistics:get"),
+  getWeekRecords: () => ipcRenderer.invoke("records:getWeek"),
+
   // Events
   onPrayerTimesUpdated: (callback: (data: unknown) => void) => {
     ipcRenderer.on("prayer:updated", (_event: any, data: any) => callback(data));

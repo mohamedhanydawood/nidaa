@@ -1,6 +1,8 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import WeeklyHeatmap from "./components/WeeklyHeatmap";
 
 type Settings = {
   city: string;
@@ -41,6 +43,14 @@ export default function Home() {
       Maghrib: false,
       Isha: false,
     },
+    sunrise: undefined as string | undefined,
+    hijri: undefined as any,
+  });
+
+  const [statistics, setStatistics] = useState({
+    currentStreak: 0,
+    longestStreak: 0,
+    commitmentPercentage: 0,
   });
 
   // تحويل من 24 ساعة إلى 12 ساعة
@@ -93,8 +103,16 @@ export default function Home() {
                 time: data.nextPrayer.time,
               },
               checked: data.todayRecord,
+              sunrise: data.sunrise,
+              hijri: data.hijri,
             });
           }
+        }
+
+        // Fetch statistics
+        if (window.electron?.getStatistics) {
+          const stats = await window.electron.getStatistics();
+          setStatistics(stats);
         }
       } catch (err) {
         console.log("Running in web mode, using defaults", err);
@@ -120,6 +138,8 @@ export default function Home() {
             time: data.nextPrayer.time,
           },
           checked: data.todayRecord,
+          sunrise: data.sunrise,
+          hijri: data.hijri,
         });
       });
     }
@@ -133,6 +153,11 @@ export default function Home() {
             [prayerName]: done,
           },
         }));
+        
+        // Refresh statistics after marking prayer
+        if (window.electron?.getStatistics) {
+          window.electron.getStatistics().then(setStatistics);
+        }
       });
     }
     
@@ -177,21 +202,26 @@ export default function Home() {
   };
 
   return (
-    <div dir="rtl" className="h-screen bg-zinc-900 text-white overflow-hidden flex flex-col">
+    <div dir="rtl" className="h-screen text-foreground overflow-hidden flex flex-col ">
       {/* Header */}
-      <header className="bg-zinc-800 border-b border-zinc-700 px-6 py-3 flex items-center justify-between">
+      <header className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-2xl">🕌</span>
           <div>
             <h1 className="text-xl font-bold">نداء</h1>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-muted">
               {settings.city}, {settings.country}
             </p>
+            {prayerData.hijri && (
+              <p className="text-xs text-muted">
+                {prayerData.hijri.day} {prayerData.hijri.month.ar} {prayerData.hijri.year} هـ
+              </p>
+            )}
           </div>
         </div>
         <Link
           href="/settings"
-          className="px-3 py-1.5 text-sm rounded-md hover:bg-zinc-700 transition-colors"
+          className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ⚙️ الإعدادات
         </Link>
@@ -199,41 +229,62 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 p-6 grid grid-cols-12 gap-4">
+
         {/* أوقات الصلوات */}
-        <div className="col-span-12 bg-zinc-800 rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">مواقيت اليوم</h2>
-          <div className="grid grid-cols-5 gap-3">
+        <div className="col-span-12  bg-card rounded-lg p-4">
+          <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>
+          <div className="grid grid-cols-6 gap-3">
             {Object.keys(prayerData.times).map((key) => {
-              const isNext = key === prayerData.nextPrayer.englishName;
               const time24 = prayerData.times[key as keyof typeof prayerData.times];
+              
+              // Check if this prayer time is in the future
+              const [hours, minutes] = time24.split(":").map(Number);
+              const prayerTime = new Date();
+              prayerTime.setHours(hours, minutes, 0, 0);
+              const isPrayerInFuture = prayerTime.getTime() > new Date().getTime();
+              
+              // Only highlight if it's the next prayer AND its time is in the future
+              const isNext = key === prayerData.nextPrayer.englishName && isPrayerInFuture;
+              
               return (
                 <div
                   key={key}
                   className={`p-3 rounded-lg text-center transition-all ${
                     isNext
-                      ? "bg-emerald-600 shadow-lg shadow-emerald-600/50"
-                      : "bg-zinc-700"
+                      ? "bg-accent shadow-lg"
+                      : "bg-card-hover"
                   }`}
                 >
                   <div className="text-2xl mb-1">{prayerIcons[key]}</div>
                   <div className="text-sm font-semibold mb-1">{prayerNames[key]}</div>
-                  <div className={`text-lg font-bold ${isNext ? "text-white" : "text-emerald-400"}`}>
+                  <div className={`text-lg font-bold ${isNext ? "text-foreground" : "text-muted"}`}>
                     {formatTime(time24)}
                   </div>
                 </div>
               );
             })}
+            
+            {/* Sunrise Card */}
+            {prayerData.sunrise && (
+              <div className="p-3 rounded-lg text-center bg-card-hover">
+                <div className="text-2xl mb-1">🌅</div>
+                <div className="text-sm font-semibold mb-1">الشروق</div>
+                <div className="text-lg font-bold text-muted">
+                  {formatTime(prayerData.sunrise)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* قائمة الصلوات */}
-        <div className="col-span-7 bg-zinc-800 rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">قائمة التحقق</h2>
+        <div className="col-span-5 bg-card rounded-lg p-4">
+          <h2 className="text-sm font-semibold text-muted mb-3">قائمة التحقق</h2>
           <div className="space-y-2">
             {Object.keys(prayerData.times).map((key) => (
               <div
                 key={key}
-                className="flex items-center justify-between p-3 bg-zinc-700 rounded-lg hover:bg-zinc-600 transition-colors"
+                className="flex items-center justify-between p-3 bg-card-hover rounded-lg hover:bg-input transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{prayerIcons[key]}</span>
@@ -243,8 +294,8 @@ export default function Home() {
                   onClick={() => handleTogglePrayer(key)}
                   className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
                     prayerData.checked[key as keyof typeof prayerData.checked]
-                      ? "bg-emerald-500 text-white"
-                      : "bg-zinc-600 hover:bg-zinc-500"
+                      ? "bg-emerald-500 text-foreground"
+                      : "bg-muted hover:bg-zinc-500"
                   }`}
                 >
                   {prayerData.checked[key as keyof typeof prayerData.checked] ? "✓" : ""}
@@ -255,24 +306,33 @@ export default function Home() {
         </div>
 
         {/* الإحصائيات */}
-        <div className="col-span-5 bg-zinc-800 rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">الإحصائيات</h2>
+        <div className="col-span-4 bg-card rounded-lg p-4">
+          <h2 className="text-sm font-semibold text-muted mb-3">الإحصائيات</h2>
           <div className="space-y-3">
-            <div className="bg-zinc-700 p-4 rounded-lg text-center">
+            <div className="bg-card-hover p-4 rounded-lg text-center">
               <div className="text-3xl font-bold text-emerald-400">
                 {Object.values(prayerData.checked).filter(Boolean).length}/5
               </div>
-              <div className="text-sm text-zinc-400 mt-1">صلوات اليوم</div>
+              <div className="text-sm text-muted mt-1">صلوات اليوم</div>
             </div>
-            <div className="bg-zinc-700 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-blue-400">7</div>
-              <div className="text-sm text-zinc-400 mt-1">Streak أيام</div>
+            <div className="bg-card-hover p-4 rounded-lg text-center">
+              <div className="text-3xl font-bold text-blue-400">
+                {statistics.currentStreak}
+              </div>
+              <div className="text-sm text-muted mt-1">أيام متواصلة</div>
             </div>
-            <div className="bg-zinc-700 p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-purple-400">85%</div>
-              <div className="text-sm text-zinc-400 mt-1">نسبة الالتزام</div>
+            <div className="bg-card-hover p-4 rounded-lg text-center">
+              <div className="text-3xl font-bold text-purple-400">
+                {statistics.commitmentPercentage}%
+              </div>
+              <div className="text-sm text-muted mt-1">نسبة الالتزام</div>
             </div>
           </div>
+        </div>
+
+        {/* مخطط الأسبوع */}
+        <div className="col-span-3">
+          <WeeklyHeatmap />
         </div>
       </main>
     </div>

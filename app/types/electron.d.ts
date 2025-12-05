@@ -11,6 +11,10 @@ declare global {
       getPrayerTimes: () => Promise<PrayerTimesData | null>;
       markPrayerDone: (prayerName: string) => Promise<boolean>;
       
+      // Statistics
+      getStatistics: () => Promise<Statistics>;
+      getWeekRecords: () => Promise<WeekRecord[]>;
+      
       // Events
       onPrayerTimesUpdated: (callback: (data: PrayerTimesData) => void) => void;
       onPrayerMarked: (callback: (data: { prayerName: string; done: boolean }) => void) => void;
@@ -47,6 +51,39 @@ export interface PrayerTimesData {
     Maghrib: boolean;
     Isha: boolean;
   };
+  sunrise?: string;
+  hijri?: {
+    day: string;
+    month: {
+      en: string;
+      ar: string;
+      number: number;
+    };
+    year: string;
+    weekday: {
+      en: string;
+      ar: string;
+    };
+  };
+}
+
+export interface Statistics {
+  currentStreak: number;
+  longestStreak: number;
+  commitmentPercentage: number;
+}
+
+export interface WeekRecord {
+  date: string;
+  dayName: string;
+  prayers: {
+    Fajr: boolean;
+    Dhuhr: boolean;
+    Asr: boolean;
+    Maghrib: boolean;
+    Isha: boolean;
+  };
+  total: number;
 }
 
 

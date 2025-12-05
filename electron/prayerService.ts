@@ -6,13 +6,29 @@ type PrayerTimings = {
   Asr: string;
   Maghrib: string;
   Isha: string;
+  Sunrise?: string;
 };
 
-export type PrayerKey = keyof PrayerTimings;
+export type PrayerKey = 'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
 
 export type DaySchedule = {
   dateISO: string;
   timings: Record<PrayerKey, Date>;
+  sunrise?: Date;
+  hijri?: {
+    day: string;
+    month: {
+      en: string;
+      ar: string;
+      number: number;
+    };
+    year: string;
+    weekday: {
+      en: string;
+      ar: string;
+    };
+  };
+  meta?: any; // API meta object
 };
 
 function parseTimeToDate(timeHHMM: string, tzOffsetMinutes?: number): Date {
@@ -71,7 +87,43 @@ export async function fetchTodayScheduleByCity(params: {
   };
 
   const todayISO = new Date().toISOString().slice(0, 10);
-  return { dateISO: todayISO, timings: mapped };
+  
+  // Extract Sunrise
+  const sunrise = timings.Sunrise
+    ? parseTimeToDate(timings.Sunrise, metaTzOffset)
+    : undefined;
+  
+  // Extract Hijri date
+  const hijri = json?.data?.date?.hijri
+    ? {
+        day: json.data.date.hijri.day,
+        month: {
+          en: json.data.date.hijri.month.en,
+          ar: json.data.date.hijri.month.ar,
+          number: json.data.date.hijri.month.number,
+        },
+        year: json.data.date.hijri.year,
+        weekday: {
+          en: json.data.date.hijri.weekday.en,
+          ar: json.data.date.hijri.weekday.ar,
+        },
+      }
+    : undefined;
+  
+  return { dateISO: todayISO, timings: mapped, sunrise, hijri, meta: json.data.meta };
+}
+
+export async function fetchNextPrayer(lat: number, lng: number, date: string, method: number, school: number) {
+  const url = `https://api.aladhan.com/v1/nextPrayer/${date}?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Aladhan API error ${res.status}`);
+  }
+  const json = await res.json();
+  const timings = json.data.timings;
+  const prayerName = Object.keys(timings)[0];
+  const time = timings[prayerName];
+  return { name: prayerName, time: parseTimeToDate(time) };
 }
 
 function msUntil(d: Date): number {

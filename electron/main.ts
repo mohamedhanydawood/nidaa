@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import { PrayerScheduler } from "./scheduler.js";
+import { fetchTodayScheduleByCity, fetchNextPrayer } from "./prayerService.js";
 import path from "path";
 import Store from "electron-store";
 import { fileURLToPath } from "url";
@@ -134,34 +135,32 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle("prayer:get", async () => {
-    if (!scheduler) return null;
-    
-    const schedule = scheduler.getTodaySchedule();
-    if (!schedule) return null;
+    const settings = store.get("settings") as AppSettings;
+    if (!settings.city || !settings.country) return null;
 
-    // تحويل الأوقات إلى HH:MM
-    const times: Record<string, string> = {};
-    for (const [key, date] of Object.entries(schedule.timings)) {
-      const hours = date.getHours().toString().padStart(2, "0");
-      const minutes = date.getMinutes().toString().padStart(2, "0");
-      times[key] = `${hours}:${minutes}`;
-    }
+    try {
+      const schedule = await fetchTodayScheduleByCity({
+        city: settings.city,
+        country: settings.country,
+        method: settings.method || 5,
+        madhab: settings.madhab || 1,
+      });
 
-    // البحث عن الصلاة القادمة
-    const now = new Date();
-    const entries = Object.entries(schedule.timings) as Array<[string, Date]>;
-    const upcoming = entries
-      .filter(([, at]) => at.getTime() > now.getTime())
-      .sort((a, b) => a[1].getTime() - b[1].getTime());
+      const meta = schedule.meta;
 
-    let nextPrayer = {
-      name: "الفجر",
-      englishName: "Fajr",
-      time: times.Fajr || "05:00",
-    };
+      // تحويل الأوقات إلى HH:MM
+      const times: Record<string, string> = {};
+      for (const [key, date] of Object.entries(schedule.timings)) {
+        const hours = date.getHours().toString().padStart(2, "0");
+        const minutes = date.getMinutes().toString().padStart(2, "0");
+        times[key] = `${hours}:${minutes}`;
+      }
 
-    if (upcoming.length > 0) {
-      const [key] = upcoming[0];
+      // جلب الصلاة القادمة باستخدام API
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2,'0')}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getFullYear()}`;
+      const nextPrayerData = await fetchNextPrayer(meta.latitude, meta.longitude, dateStr, meta.method.id, settings.madhab || 1);
+
       const arabicNames: Record<string, string> = {
         Fajr: "الفجر",
         Dhuhr: "الظهر",
@@ -169,29 +168,109 @@ app.whenReady().then(async () => {
         Maghrib: "المغرب",
         Isha: "العشاء",
       };
-      nextPrayer = {
-        name: arabicNames[key] || key,
-        englishName: key,
-        time: times[key],
+
+      const nextPrayer = {
+        name: arabicNames[nextPrayerData.name] || nextPrayerData.name,
+        englishName: nextPrayerData.name,
+        time: nextPrayerData.time.toTimeString().slice(0,5),
       };
+
+      // جلب سجلات الصلوات المؤداة
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const records = (store.get("records") as Record<string, Record<string, boolean>>) || {};
+      const todayRecord = records[todayKey] || {
+        Fajr: false,
+        Dhuhr: false,
+        Asr: false,
+        Maghrib: false,
+        Isha: false,
+      };
+
+      // تحويل وقت الشروق إلى HH:MM
+      let sunrise = undefined;
+      if (schedule.sunrise) {
+        const hours = schedule.sunrise.getHours().toString().padStart(2, "0");
+        const minutes = schedule.sunrise.getMinutes().toString().padStart(2, "0");
+        sunrise = `${hours}:${minutes}`;
+      }
+
+      return {
+        times,
+        nextPrayer,
+        todayRecord,
+        sunrise,
+        hijri: schedule.hijri,
+      };
+    } catch (error) {
+      console.error("Error fetching prayer data:", error);
+      // Fallback to scheduler if available
+      if (scheduler) {
+        const schedule = scheduler.getTodaySchedule();
+        if (schedule) {
+          // Use the old logic as fallback
+          const times: Record<string, string> = {};
+          for (const [key, date] of Object.entries(schedule.timings)) {
+            const hours = date.getHours().toString().padStart(2, "0");
+            const minutes = date.getMinutes().toString().padStart(2, "0");
+            times[key] = `${hours}:${minutes}`;
+          }
+
+          const now = new Date();
+          const entries = Object.entries(schedule.timings) as Array<[string, Date]>;
+          const upcoming = entries
+            .filter(([, at]) => at.getTime() > now.getTime())
+            .sort((a, b) => a[1].getTime() - b[1].getTime());
+
+          let nextPrayer = {
+            name: "الفجر",
+            englishName: "Fajr",
+            time: times.Fajr || "05:00",
+          };
+
+          if (upcoming.length > 0) {
+            const [key] = upcoming[0];
+            const arabicNames: Record<string, string> = {
+              Fajr: "الفجر",
+              Dhuhr: "الظهر",
+              Asr: "العصر",
+              Maghrib: "المغرب",
+              Isha: "العشاء",
+            };
+            nextPrayer = {
+              name: arabicNames[key] || key,
+              englishName: key,
+              time: times[key],
+            };
+          }
+
+          const todayKey = new Date().toISOString().slice(0, 10);
+          const records = (store.get("records") as Record<string, Record<string, boolean>>) || {};
+          const todayRecord = records[todayKey] || {
+            Fajr: false,
+            Dhuhr: false,
+            Asr: false,
+            Maghrib: false,
+            Isha: false,
+          };
+
+          let sunrise = undefined;
+          if (schedule.sunrise) {
+            const hours = schedule.sunrise.getHours().toString().padStart(2, "0");
+            const minutes = schedule.sunrise.getMinutes().toString().padStart(2, "0");
+            sunrise = `${hours}:${minutes}`;
+          }
+
+          return {
+            times,
+            nextPrayer,
+            todayRecord,
+            sunrise,
+            hijri: schedule.hijri,
+          };
+        }
+      }
+      return null;
     }
-
-    // جلب سجلات الصلوات المؤداة
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const records = (store.get("records") as Record<string, Record<string, boolean>>) || {};
-    const todayRecord = records[todayKey] || {
-      Fajr: false,
-      Dhuhr: false,
-      Asr: false,
-      Maghrib: false,
-      Isha: false,
-    };
-
-    return {
-      times,
-      nextPrayer,
-      todayRecord,
-    };
   });
 
   ipcMain.handle("prayer:mark", async (_e, prayerName: string) => {
@@ -223,6 +302,113 @@ app.whenReady().then(async () => {
     }
     
     return true;
+  });
+
+  ipcMain.handle("statistics:get", async () => {
+    const records = (store.get("records") as Record<string, Record<string, boolean>>) || {};
+    
+    // حساب السلسلة الحالية (consecutive days with all 5 prayers)
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    
+    // ترتيب التواريخ من الأقدم للأحدث
+    const sortedDates = Object.keys(records).sort();
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // حساب السلسلة الحالية من اليوم ورجوعاً للخلف
+    for (let i = 0; i < 365; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().slice(0, 10);
+      
+      const dayRecord = records[dateKey];
+      if (!dayRecord) break;
+      
+      const allPrayersDone = Object.values(dayRecord).filter(Boolean).length === 5;
+      if (allPrayersDone) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+    
+    // حساب أطول سلسلة
+    for (const dateKey of sortedDates) {
+      const dayRecord = records[dateKey];
+      const allPrayersDone = Object.values(dayRecord).filter(Boolean).length === 5;
+      
+      if (allPrayersDone) {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 0;
+      }
+    }
+    
+    // حساب نسبة الالتزام (آخر 30 يوم)
+    let totalPrayers = 0;
+    let completedPrayers = 0;
+    
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().slice(0, 10);
+      
+      const dayRecord = records[dateKey];
+      if (dayRecord) {
+        totalPrayers += 5;
+        completedPrayers += Object.values(dayRecord).filter(Boolean).length;
+      }
+    }
+    
+    const commitmentPercentage = totalPrayers > 0 
+      ? Math.round((completedPrayers / totalPrayers) * 100)
+      : 0;
+    
+    return {
+      currentStreak,
+      longestStreak,
+      commitmentPercentage,
+    };
+  });
+
+  ipcMain.handle("records:getWeek", async () => {
+    const records = (store.get("records") as Record<string, Record<string, boolean>>) || {};
+    const weekData: Array<{
+      date: string;
+      dayName: string;
+      prayers: Record<string, boolean>;
+      total: number;
+    }> = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().slice(0, 10);
+      
+      const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const dayName = dayNames[date.getDay()];
+      
+      const prayers = records[dateKey] || {
+        Fajr: false,
+        Dhuhr: false,
+        Asr: false,
+        Maghrib: false,
+        Isha: false,
+      };
+      
+      const total = Object.values(prayers).filter(Boolean).length;
+      
+      weekData.push({
+        date: dateKey,
+        dayName,
+        prayers,
+        total,
+      });
+    }
+    
+    return weekData;
   });
 
   app.on("activate", () => {
