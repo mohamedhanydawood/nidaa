@@ -1,6 +1,6 @@
 # نداء - Islamic Prayer Times Desktop App
 
-<img width="1785" height="946" alt="Cover" src="https://github.com/user-attachments/assets/2e1d10a1-78f8-49b5-96e2-3f98616b57ed" />
+<img width="1918" height="1050" alt="image" src="https://github.com/user-attachments/assets/93391514-eeee-4571-ad28-5cce3b0c0945" />
 
 A modern Islamic prayer times desktop application built with Next.js and Electron. Features real-time prayer notifications, prayer tracking, statistics, and a beautiful Arabic interface.
 
