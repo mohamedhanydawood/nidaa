@@ -6,7 +6,11 @@ let tray: Tray | null = null;
 let isQuitting = false;
 
 export function createTray() {
-  const iconPath = path.join(process.cwd(), 'public/icon.ico');
+  const iconPath = process.platform === 'darwin'
+    ? path.join(process.cwd(), 'public/icon.icns')
+    : process.platform === 'linux'
+    ? path.join(process.cwd(), 'public/icon.png')
+    : path.join(process.cwd(), 'public/icon.ico');
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
   
@@ -53,11 +57,17 @@ export function createTray() {
 }
 
 export function createWindow(preloadPath: string, startUrl: string): BrowserWindow {
+  const iconPath = process.platform === 'darwin'
+    ? path.join(process.cwd(), 'public/icon.icns')
+    : process.platform === 'linux'
+    ? path.join(process.cwd(), 'public/icon.png')
+    : path.join(process.cwd(), 'public/icon.ico');
+  
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
-    icon: path.join(process.cwd(), 'public/icon.ico'),
+    icon: iconPath,
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

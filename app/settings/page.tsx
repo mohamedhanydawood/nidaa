@@ -169,12 +169,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div dir="rtl" className="h-screen  text-foreground overflow-hidden flex flex-col">
+    <div dir="rtl" className="h-screen text-foreground flex flex-col">
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🕌</span>
-          <h1 className="text-xl font-bold">نداء - الإعدادات</h1>
+      <header className="bg-card border-b border-border px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="text-xl md:text-2xl">🕌</span>
+          <h1 className="text-lg md:text-xl font-bold">نداء - الإعدادات</h1>
         </div>
         <Link
           href="/"
@@ -185,7 +185,7 @@ export default function SettingsPage() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Country */}
           <div className="bg-card p-4 rounded-lg">
@@ -287,7 +287,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Save Button */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={save}
               disabled={saving}

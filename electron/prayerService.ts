@@ -28,7 +28,10 @@ export type DaySchedule = {
       ar: string;
     };
   };
-  meta?: any; // API meta object
+  meta?: {
+    timezone?: string;
+    [key: string]: unknown;
+  }; // API meta object
 };
 
 function parseTimeToDate(timeHHMM: string, tzOffsetMinutes?: number): Date {

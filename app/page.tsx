@@ -203,14 +203,14 @@ export default function Home() {
   };
 
   return (
-    <div dir="rtl" className="h-screen text-foreground overflow-hidden flex flex-col ">
+    <div dir="rtl" className="h-screen text-foreground flex flex-col">
       {/* Header */}
-      <header className="bg-card px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <header className="bg-card px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-3">
           {/* <span className="text-2xl">🕌</span> */}
-          <Image src="/icon.ico" alt="Nidaa Logo" width={50} height={50} />
+          <Image src="/icon.ico" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
           <div>
-            <h1 className="text-xl font-bold">نداء</h1>
+            <h1 className="text-lg md:text-xl font-bold">نداء</h1>
             <p className="text-xs text-muted">
               {settings.city}, {settings.country}
             </p>
@@ -230,12 +230,12 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 grid grid-cols-12 gap-4">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4">
 
         {/* أوقات الصلوات */}
-        <div className="col-span-12  bg-card rounded-lg p-4">
+        <div className="col-span-1 md:col-span-12 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>
-          <div className="grid grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 md:gap-3">
             {Object.keys(prayerData.times).map((key) => {
               const time24 = prayerData.times[key as keyof typeof prayerData.times];
               
@@ -251,15 +251,15 @@ export default function Home() {
               return (
                 <div
                   key={key}
-                  className={`p-3 rounded-lg text-center transition-all ${
+                  className={`p-2 md:p-3 rounded-lg text-center transition-all ${
                     isNext
                       ? "bg-accent shadow-lg"
                       : "bg-card-hover"
                   }`}
                 >
-                  <div className="text-2xl mb-1">{prayerIcons[key]}</div>
-                  <div className="text-sm font-semibold mb-1">{prayerNames[key]}</div>
-                  <div className={`text-lg font-bold ${isNext ? "text-foreground" : "text-muted"}`}>
+                  <div className="text-xl md:text-2xl mb-1">{prayerIcons[key]}</div>
+                  <div className="text-xs md:text-sm font-semibold mb-1">{prayerNames[key]}</div>
+                  <div className={`text-sm md:text-lg font-bold ${isNext ? "text-foreground" : "text-muted"}`}>
                     {formatTime(time24)}
                   </div>
                 </div>
@@ -268,10 +268,10 @@ export default function Home() {
             
             {/* Sunrise Card */}
             {prayerData.sunrise && (
-              <div className="p-3 rounded-lg text-center bg-card-hover">
-                <div className="text-2xl mb-1">🌅</div>
-                <div className="text-sm font-semibold mb-1">الشروق</div>
-                <div className="text-lg font-bold text-muted">
+              <div className="p-2 md:p-3 rounded-lg text-center bg-card-hover">
+                <div className="text-xl md:text-2xl mb-1">🌅</div>
+                <div className="text-xs md:text-sm font-semibold mb-1">الشروق</div>
+                <div className="text-sm md:text-lg font-bold text-muted">
                   {formatTime(prayerData.sunrise)}
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function Home() {
         </div>
 
         {/* قائمة الصلوات */}
-        <div className="col-span-5 bg-card rounded-lg p-4">
+        <div className="col-span-1 md:col-span-5 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">قائمة التحقق</h2>
           <div className="space-y-2">
             {Object.keys(prayerData.times).map((key) => (
@@ -288,13 +288,13 @@ export default function Home() {
                 key={key}
                 className="flex items-center justify-between p-3 bg-card-hover rounded-lg hover:bg-input transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{prayerIcons[key]}</span>
-                  <span className="font-medium">{prayerNames[key]}</span>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <span className="text-lg md:text-xl">{prayerIcons[key]}</span>
+                  <span className="font-medium text-sm md:text-base">{prayerNames[key]}</span>
                 </div>
                 <button
                   onClick={() => handleTogglePrayer(key)}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                  className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all ${
                     prayerData.checked[key as keyof typeof prayerData.checked]
                       ? "bg-emerald-500 text-foreground"
                       : "bg-muted hover:bg-zinc-500"
@@ -308,32 +308,32 @@ export default function Home() {
         </div>
 
         {/* الإحصائيات */}
-        <div className="col-span-4 bg-card rounded-lg p-4">
+        <div className="col-span-1 md:col-span-4 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">الإحصائيات</h2>
-          <div className="space-y-3">
-            <div className="bg-card-hover p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-emerald-400">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
+              <div className="text-2xl md:text-3xl font-bold text-emerald-400">
                 {Object.values(prayerData.checked).filter(Boolean).length}/5
               </div>
-              <div className="text-sm text-muted mt-1">صلوات اليوم</div>
+              <div className="text-xs md:text-sm text-muted mt-1">صلوات اليوم</div>
             </div>
-            <div className="bg-card-hover p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-blue-400">
+            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-400">
                 {statistics.currentStreak}
               </div>
-              <div className="text-sm text-muted mt-1">أيام متواصلة</div>
+              <div className="text-xs md:text-sm text-muted mt-1">أيام متواصلة</div>
             </div>
-            <div className="bg-card-hover p-4 rounded-lg text-center">
-              <div className="text-3xl font-bold text-purple-400">
+            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
+              <div className="text-2xl md:text-3xl font-bold text-purple-400">
                 {statistics.commitmentPercentage}%
               </div>
-              <div className="text-sm text-muted mt-1">نسبة الالتزام</div>
+              <div className="text-xs md:text-sm text-muted mt-1">نسبة الالتزام</div>
             </div>
           </div>
         </div>
 
         {/* مخطط الأسبوع */}
-        <div className="col-span-3">
+        <div className="col-span-1 md:col-span-3">
           <WeeklyHeatmap />
         </div>
       </main>

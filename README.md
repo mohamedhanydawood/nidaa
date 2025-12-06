@@ -1,37 +1,41 @@
-# Next.js + Electron Starter
+# نداء - Islamic Prayer Times Desktop App
+
 <img width="1785" height="946" alt="Cover" src="https://github.com/user-attachments/assets/2e1d10a1-78f8-49b5-96e2-3f98616b57ed" />
-A modern desktop application starter template combining [Next.js](https://nextjs.org) with [Electron](https://www.electronjs.org/). Build cross-platform desktop apps using React and the latest web technologies.
 
-## Features
+A modern Islamic prayer times desktop application built with Next.js and Electron. Features real-time prayer notifications, prayer tracking, statistics, and a beautiful Arabic interface.
 
-- ⚡️ **Next.js 16** - React framework with App Router
-- 🖥️ **Electron 39** - Build cross-platform desktop apps
-- 📦 **TypeScript** - Fully typed codebase
-- 🎨 **Tailwind CSS** - Utility-first CSS framework
-- 🔥 **Hot Reload** - Live reload in development for both renderer and main process
-- 📦 **Easy Distribution** - Build executables for Windows, macOS, and Linux
+## ✨ Features
 
-## Project Structure
+- 🕌 **Accurate Prayer Times** - Real-time calculation using Aladhan API
+- 🔔 **Smart Notifications** - Configurable prayer time alerts
+- 📊 **Prayer Tracking** - Mark completed prayers and view statistics
+- 📅 **Hijri Calendar** - Display Islamic dates alongside Gregorian
+- 🌅 **Sunrise Times** - Additional astronomical information
+- 📈 **Weekly Heatmap** - Visual prayer completion tracking
+- 🎨 **Arabic Interface** - RTL support with beautiful Arabic typography
+- 🖥️ **Desktop Integration** - Tray icon, background operation, system notifications
+- 🔒 **Secure & Private** - No data collection, local storage only
+- 🌙 **Dark Theme** - Modern black/white color scheme
 
-```
-nextjs-electron-starter/
-├── app/                  # Next.js App Router pages
-│   ├── layout.tsx       # Root layout
-│   ├── page.tsx         # Home page
-│   └── globals.css      # Global styles
-├── electron/            # Electron source files
-│   ├── main.ts         # Electron main process
-│   ├── preload.ts      # Preload script
-│   └── tsconfig.json   # TypeScript config for Electron
-├── build-electron/      # Compiled Electron files (auto-generated)
-├── public/             # Static assets
-└── out/                # Next.js production build (auto-generated)
-```
+## 📱 How It Works
 
-## Getting Started
+### Core Functionality
+1. **Location-Based Times**: Select your city and country to get accurate prayer times
+2. **Real-Time Updates**: Prayer times are calculated daily using astronomical data
+3. **Smart Notifications**: Get notified before each prayer with customizable timing
+4. **Prayer Tracking**: Mark prayers as completed and track your daily progress
+5. **Statistics Dashboard**: View streaks, completion rates, and weekly summaries
+
+### Technical Architecture
+- **Frontend**: Next.js 16 with React 19, TypeScript, and Tailwind CSS
+- **Backend**: Electron 39 for desktop functionality
+- **Storage**: Local electron-store (no cloud sync)
+- **API**: Aladhan API for prayer time calculations
+- **Security**: Context isolation, CSP headers, input validation
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
 - **Node.js** 18.x or higher
 - **npm**, **yarn**, **pnpm**, or **bun**
 
@@ -39,212 +43,271 @@ nextjs-electron-starter/
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd nextjs-electron-starter
+git clone https://github.com/mohamedhanydawood/nidaa.git
+cd nidaa
 ```
 
 2. Install dependencies:
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-## Development
+## 🛠️ Development
 
 ### Running the Development Server
 
-Start the development environment with hot reload:
+Start the development environment:
 
 ```bash
 npm run dev
 ```
 
-This command will:
-1. Start the Next.js development server on `http://localhost:3000`
-2. Compile TypeScript files in watch mode
-3. Launch the Electron window automatically
-4. Enable hot reload for both renderer (Next.js) and main process (Electron)
+This will:
+- Start Next.js dev server on `http://localhost:3000`
+- Compile Electron TypeScript files
+- Launch the desktop application
+- Enable hot reload for UI changes
 
-The Electron window will open automatically once the Next.js dev server is ready. Any changes you make to:
-- **Next.js pages** (`app/*`) - Auto-refresh in the Electron window
-- **Electron main process** (`electron/main.ts`) - Requires manual restart of the app
-- **Preload script** (`electron/preload.ts`) - Requires manual restart of the app
+### Development Workflow
 
-### Development Tips
+- **UI Changes**: Edit files in `app/` directory - changes auto-refresh
+- **Electron Logic**: Edit files in `electron/` directory - requires app restart
+- **Settings**: Modify `app/settings/page.tsx` for configuration UI
+- **Styling**: Update `app/globals.css` for theme changes
 
-- Edit `app/page.tsx` to modify the home page
-- Edit `electron/main.ts` to customize the Electron window or add native features
-- Edit `electron/preload.ts` to expose Node.js APIs safely to the renderer process
-- The app automatically connects to `http://localhost:3000` in development mode
+## 📁 Project Structure
 
-## Building for Production
+```
+nidaa/
+├── app/                          # Next.js App Router
+│   ├── components/              # React Components
+│   │   ├── CountdownTimer.tsx   # Prayer countdown display
+│   │   ├── PrayerChecklist.tsx  # Prayer marking interface
+│   │   └── WeeklyHeatmap.tsx    # Statistics visualization
+│   ├── settings/                # Settings page
+│   │   └── page.tsx            # Configuration interface
+│   ├── globals.css             # Global styles & theme
+│   ├── layout.tsx              # Root layout with CSP
+│   └── page.tsx                # Main prayer times display
+├── electron/                    # Electron main process
+│   ├── ipcHandlers.ts          # IPC communication handlers
+│   ├── main.ts                 # Application entry point
+│   ├── prayerService.ts        # Aladhan API integration
+│   ├── scheduler.ts            # Prayer notification scheduler
+│   ├── store.ts                # Local data persistence
+│   ├── types.ts                # TypeScript definitions
+│   ├── validators.ts           # Input validation
+│   └── window.ts               # Window & tray management
+├── build-electron/             # Compiled Electron files
+├── public/                     # Static assets
+│   └── icon.ico               # Application icon
+└── out/                       # Next.js production build
+```
 
-### Build the Application
+### Codebase Architecture
 
-Create a production build of your app:
+#### Frontend (`app/`)
+- **Modern React**: Uses Next.js 16 App Router with React 19
+- **TypeScript**: Fully typed components and hooks
+- **Tailwind CSS**: Utility-first styling with custom Arabic theme
+- **RTL Support**: Right-to-left layout for Arabic text
+- **Responsive Design**: Works on different window sizes
+
+#### Backend (`electron/`)
+- **Modular Architecture**: Split into focused modules
+- **IPC Communication**: Secure renderer-main process communication
+- **Local Storage**: electron-store for settings and prayer records
+- **Background Operation**: Tray icon allows app to run minimized
+- **Security**: Context isolation and CSP protection
+
+#### Key Components
+
+**Prayer Times Display** (`app/page.tsx`)
+- Real-time prayer schedule
+- Next prayer highlighting
+- Statistics dashboard
+- Weekly heatmap visualization
+
+**Settings Management** (`app/settings/page.tsx`)
+- Location configuration (country/city)
+- Prayer calculation method selection
+- Notification preferences
+- Time format options
+
+**Prayer Scheduler** (`electron/scheduler.ts`)
+- Notification timing logic
+- Prayer time calculations
+- Background scheduling
+
+**IPC Handlers** (`electron/ipcHandlers.ts`)
+- Settings CRUD operations
+- Prayer data fetching
+- Statistics calculations
+- Prayer marking logic
+
+## 📋 Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development with hot reload |
+| `npm run build` | Build for production |
+| `npm start` | Run production build locally |
+| `npm run dist` | Create distributable packages |
+| `npm run lint` | Run ESLint code quality checks |
+
+## 🔧 Configuration
+
+### Prayer Calculation Methods
+
+The app supports multiple Islamic prayer time calculation methods:
+
+1. **Egyptian General Authority** (Default)
+2. **Islamic Society of North America**
+3. **Muslim World League**
+4. **Umm Al-Qura, Makkah**
+5. **Other regional methods**
+
+### Supported Locations
+
+**Middle East & North Africa:**
+- Egypt (Cairo, Alexandria, etc.)
+- Saudi Arabia (Riyadh, Mecca, Medina)
+- UAE (Dubai, Abu Dhabi)
+- Kuwait, Qatar, Bahrain, Oman
+- Jordan, Lebanon, Syria, Iraq
+- Palestine, Yemen
+- Morocco, Algeria, Tunisia, Libya, Sudan
+
+### Notification Settings
+
+- **Pre-prayer Alert**: Configure minutes before prayer (0-60)
+- **Madhab Selection**: Hanafi (1) or Shafi (0) for Asr prayer
+- **Time Format**: 12-hour or 24-hour display
+
+## 🏗️ Building for Production
+
+### Create Production Build
 
 ```bash
 npm run build
 ```
 
-This command will:
-1. Build the Next.js app for production (static export)
-2. Compile TypeScript files in the `electron/` directory
-3. Output files to the `out/` directory (Next.js) and `build-electron/` (Electron)
-
 ### Test Production Build
-
-Run the production build locally before creating distributables:
 
 ```bash
 npm start
 ```
 
-This launches Electron with the production build of your Next.js app.
-
-### Create Distributable Packages
-
-Build platform-specific executables and installers:
+### Create Distributables
 
 ```bash
 npm run dist
 ```
 
-This will:
-- Build the application for production
-- Create executable files (.exe for Windows, .dmg for macOS, .AppImage for Linux)
-- Generate installers in the `dist/` directory
+**Output:**
+- **Windows**: `.exe` installer and portable version
+- **macOS**: `.dmg` installer
+- **Linux**: `.AppImage` and package formats
 
-#### Output Files
+## 🤝 Contributing
 
-After running `npm run dist`, you'll find the following in the `dist/` directory:
+We welcome contributions! Here's how you can help:
 
-**Windows:**
-- `nextjs-electron-starter Setup X.X.X.exe` - Installer
-- Unpacked application folder
+### Development Setup
 
-**macOS:**
-- `nextjs-electron-starter-X.X.X.dmg` - DMG installer
-- `nextjs-electron-starter-X.X.X-mac.zip` - Zipped app
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-**Linux:**
-- `nextjs-electron-starter-X.X.X.AppImage` - AppImage
-- `.deb` and `.rpm` packages (if configured)
+### Code Guidelines
 
-## Available Scripts
+- **TypeScript**: Strict typing required
+- **ESLint**: Follow the configured linting rules
+- **Commits**: Use conventional commit format
+- **Testing**: Test on Windows, macOS, and Linux
+- **Security**: No external dependencies without review
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build Next.js and Electron for production |
-| `npm start` | Run the production build locally |
-| `npm run dist` | Create distributable packages (.exe, .dmg, etc.) |
-| `npm run lint` | Run ESLint to check code quality |
+### Areas for Contribution
 
-## Configuration
+- 🌐 **Localization**: Add more languages
+- 🎨 **Themes**: Additional color schemes
+- 📱 **Features**: New Islamic features (Qibla, Quran, etc.)
+- 🔧 **Performance**: Optimize memory usage
+- 🐛 **Bug Fixes**: Report and fix issues
+- 📚 **Documentation**: Improve docs and guides
 
-### Electron Configuration
+### Reporting Issues
 
-Edit `electron/main.ts` to customize:
-- Window size and properties
-- Menu bar and tray icons
-- IPC communication
-- Native features
+When reporting bugs, please include:
+- Operating system and version
+- App version
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots if applicable
 
-### electron-builder Configuration
+## 📄 License
 
-Add configuration to `package.json` to customize the build:
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-```json
-"build": {
-  "appId": "com.yourcompany.yourapp",
-  "productName": "Your App Name",
-  "directories": {
-    "output": "dist"
-  },
-  "files": [
-    "build-electron/**/*",
-    "out/**/*"
-  ],
-  "win": {
-    "target": "nsis",
-    "icon": "public/icon.ico"
-  },
-  "mac": {
-    "target": "dmg",
-    "icon": "public/icon.icns"
-  },
-  "linux": {
-    "target": "AppImage",
-    "icon": "public/icon.png"
-  }
-}
-```
+### Permissions
+- ✅ Commercial use
+- ✅ Modification
+- ✅ Distribution
+- ✅ Private use
 
-## Learn More
+### Limitations
+- ❌ No liability
+- ❌ No warranty
 
-### Next.js Resources
-- [Next.js Documentation](https://nextjs.org/docs) - Learn about Next.js features and API
-- [Learn Next.js](https://nextjs.org/learn) - Interactive Next.js tutorial
-- [Next.js GitHub](https://github.com/vercel/next.js)
+### Conditions
+- ℹ️ License and copyright notice must be included
 
-### Electron Resources
-- [Electron Documentation](https://www.electronjs.org/docs/latest) - Official Electron docs
-- [Electron Builder](https://www.electron.build/) - Distribution package builder
-- [Electron Forge](https://www.electronforge.io/) - Alternative build tool
+## 🧹 Clean Build
 
-## Clean Build
-
-### Files/Folders to Delete Before a Second Build
-
-To ensure a clean build, delete the following generated folders before running `npm run dist` again:
+Before rebuilding, clean these folders:
 
 ```bash
-# PowerShell (Windows)
-Remove-Item -Path "dist",".next","out","build-electron" -Recurse -Force -ErrorAction SilentlyContinue
+# Windows PowerShell
+Remove-Item -Path "dist",".next","out","build-electron" -Recurse -Force
 
-# Bash (macOS/Linux)
+# Linux/macOS
 rm -rf dist .next out build-electron
 ```
 
-| Folder/File | Purpose | Action |
-|-------------|---------|--------|
-| `dist/` | Final executables & installers | **Delete before rebuild** |
-| `.next/` | Next.js build cache | **Delete before rebuild** |
-| `out/` | Next.js static export | **Delete before rebuild** |
-| `build-electron/` | Compiled Electron TypeScript files | **Delete before rebuild** |
-| `node_modules/` | Dependencies | **Keep** (only delete if reinstalling) |
+## ❓ Troubleshooting
 
-**Note:** The build process will automatically regenerate these folders, so it's safe to delete them.
+### Common Issues
 
-## Troubleshooting
+**App won't start:**
+- Ensure Node.js 18+ is installed
+- Clear node_modules: `rm -rf node_modules && npm install`
 
-### Electron window doesn't open
-- Make sure the Next.js dev server is running on port 3000
-- Check if `NODE_ENV=development` is set in the electron-dev script
-- Clear the `build-electron/` folder and restart
+**Prayer times incorrect:**
+- Check location settings
+- Verify internet connection for API calls
+- Try different calculation methods
 
-### Build errors
-- Delete `node_modules/` and reinstall: `npm install`
-- Clear Next.js cache: `rm -rf .next`
-- Clear all build artifacts: `rm -rf dist .next out build-electron`
-- Ensure TypeScript compiles without errors: `tsc -p electron/tsconfig.json`
+**Notifications not working:**
+- Check system notification permissions
+- Verify notification settings in app
+- Restart the application
 
-### Port 3000 already in use
-- Stop other processes using port 3000
-- Or modify the port in `next.config.ts` and `electron/main.ts`
+**Build errors:**
+- Clear all build artifacts
+- Reinstall dependencies
+- Check TypeScript compilation: `npx tsc -p electron/tsconfig.json`
 
-### Windows symlink errors during build
-- The build may show warnings about symlinks, but these can be safely ignored
-- The executables will still be created successfully in the `dist/` folder
+### Support
 
-## License
+For questions or issues:
+1. Check existing GitHub issues
+2. Create a new issue with detailed information
+3. Include your operating system and app version
 
-MIT
+---
 
-## Contributing
+**Made with ❤️ for the Muslim community**
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+*May Allah accept our prayers and guide us all to the straight path*
