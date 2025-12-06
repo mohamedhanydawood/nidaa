@@ -55,3 +55,9 @@ next-env.d.ts
 
 # electron-builder cache
 .electron-builder-cache
+
+# Code signing certificates (NEVER commit these!)
+*.pfx
+*.p12
+cert.pfx
+certificate.pfx

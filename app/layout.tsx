@@ -11,6 +11,18 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 export const metadata: Metadata = {
   title: "نداء",
   description: "تطبيق بسيط لتذكير أوقات الصلاة الإسلامية",
+  other: {
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.aladhan.com",
+      "frame-src 'none'",
+      "object-src 'none'",
+    ].join('; '),
+  },
 };
 
 export default function RootLayout({

@@ -133,7 +133,6 @@ export default function SettingsPage() {
     timeFormat: "24",
   });
   const [saving, setSaving] = useState(false);
-  const [customCity, setCustomCity] = useState("");
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -216,12 +215,7 @@ export default function SettingsPage() {
               value={cfg.city}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value === "__custom__") {
-                  setCustomCity("");
-                } else {
-                  setCfg({ ...cfg, city: value });
-                  setCustomCity("");
-                }
+                setCfg({ ...cfg, city: value });
               }}
             >
               {(countries.find((c) => c.name === cfg.country)?.cities || []).map((city) => (
@@ -229,22 +223,7 @@ export default function SettingsPage() {
                   {city}
                 </option>
               ))}
-              <option value="__custom__">مدينة أخرى (اكتبها يدوياً)</option>
             </select>
-            
-            {/* Custom city input */}
-            {(cfg.city === "__custom__" || customCity !== "") && (
-              <input
-                type="text"
-                placeholder="اكتب اسم المدينة بالإنجليزية"
-                className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
-                value={customCity}
-                onChange={(e) => {
-                  setCustomCity(e.target.value);
-                  setCfg({ ...cfg, city: e.target.value });
-                }}
-              />
-            )}
           </div>
 
           {/* Method */}
