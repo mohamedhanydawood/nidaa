@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import WeeklyHeatmap from "./components/WeeklyHeatmap";
 
@@ -221,12 +220,12 @@ export default function Home() {
             )}
           </div>
         </div>
-        <Link
-          href="/settings"
+        <a
+          href="settings.html"
           className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ⚙️ الإعدادات
-        </Link>
+        </a>
       </header>
 
       {/* Main Content */}

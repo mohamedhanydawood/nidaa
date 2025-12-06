@@ -6,11 +6,16 @@ let tray: Tray | null = null;
 let isQuitting = false;
 
 export function createTray() {
+  const isDev = !app.isPackaged;
+  const publicPath = isDev
+    ? path.join(process.cwd(), 'public')
+    : path.join(process.resourcesPath, 'out');
+  
   const iconPath = process.platform === 'darwin'
-    ? path.join(process.cwd(), 'public/icon.icns')
+    ? path.join(publicPath, 'icon.icns')
     : process.platform === 'linux'
-    ? path.join(process.cwd(), 'public/icon.png')
-    : path.join(process.cwd(), 'public/icon.ico');
+    ? path.join(publicPath, 'icon.png')
+    : path.join(publicPath, 'icon.ico');
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon);
   
@@ -57,11 +62,16 @@ export function createTray() {
 }
 
 export function createWindow(preloadPath: string, startUrl: string): BrowserWindow {
+  const isDev = !app.isPackaged;
+  const publicPath = isDev
+    ? path.join(process.cwd(), 'public')
+    : path.join(process.resourcesPath, 'out');
+  
   const iconPath = process.platform === 'darwin'
-    ? path.join(process.cwd(), 'public/icon.icns')
+    ? path.join(publicPath, 'icon.icns')
     : process.platform === 'linux'
-    ? path.join(process.cwd(), 'public/icon.png')
-    : path.join(process.cwd(), 'public/icon.ico');
+    ? path.join(publicPath, 'icon.png')
+    : path.join(publicPath, 'icon.ico');
   
   mainWindow = new BrowserWindow({
     width: 1200,

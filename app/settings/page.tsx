@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 type Settings = {
   city: string;
@@ -176,12 +175,12 @@ export default function SettingsPage() {
           <span className="text-xl md:text-2xl">🕌</span>
           <h1 className="text-lg md:text-xl font-bold">نداء - الإعدادات</h1>
         </div>
-        <Link
-          href="/"
+        <a
+          href="index.html"
           className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ← رجوع
-        </Link>
+        </a>
       </header>
 
       {/* Content */}
@@ -295,12 +294,12 @@ export default function SettingsPage() {
             >
               {saving ? "جاري الحفظ..." : "حفظ"}
             </button>
-            <Link
-              href="/"
+            <a
+              href="index.html"
               className="px-6 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-center"
             >
               إلغاء
-            </Link>
+            </a>
           </div>
         </div>
       </main>

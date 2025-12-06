@@ -43,13 +43,26 @@
     "appId": "com.nidaa.app",
     "productName": "Nidaa",
     "icon": "public/icon.ico",
+    "compression": "maximum",
     "directories": {
       "buildResources": "assets",
       "output": "dist"
     },
     "files": [
       "out/**/*",
-      "build-electron/**/*"
+      "build-electron/**/*",
+      "node_modules/electron-store/**/*",
+      "node_modules/conf/**/*",
+      "node_modules/ajv/**/*",
+      "node_modules/ajv-formats/**/*",
+      "node_modules/json-schema-typed/**/*",
+      "!out/**/*.map",
+      "!**/.git/**/*",
+      "!**/.vscode/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/electron-store/**/*",
+      "node_modules/conf/**/*"
     ],
     "win": {
       "target": [
@@ -58,16 +71,20 @@
           "arch": [
             "x64"
           ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
         }
       ],
+      "icon": "public/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "requestedExecutionLevel": "asInvoker",
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "نداء"
     },
     "mac": {
       "target": [
