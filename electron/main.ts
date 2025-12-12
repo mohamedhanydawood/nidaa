@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { readFile } from "fs/promises";
 import { createWindow, createTray, setQuitting } from "./window.js";
 import { registerIpcHandlers } from "./ipcHandlers.js";
+import { getSettings } from "./store.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,14 @@ function getMimeType(filePath: string): string {
     '.eot': 'application/vnd.ms-fontobject',
   };
   return mimeTypes[ext] || 'application/octet-stream';
+}
+
+// Set app name for notifications
+app.setName("نداء");
+
+// For Windows notifications to show app name correctly
+if (process.platform === 'win32') {
+  app.setAppUserModelId("com.nidaa.app");
 }
 
 app.whenReady().then(async () => {
@@ -72,9 +81,13 @@ app.whenReady().then(async () => {
     ? path.join(__dirname, "preload.cjs")
     : path.join(__dirname, "preload.cjs");
   
+  // Check if this is first time user
+  const settings = getSettings();
+  const isFirstTime = !settings.guideCompleted;
+  
   const startUrl = isDev
-    ? "http://localhost:3000"
-    : "app://index.html";
+    ? (isFirstTime ? "http://localhost:3000/guide" : "http://localhost:3000")
+    : (isFirstTime ? "app://guide.html" : "app://index.html");
 
   const mainWindow = createWindow(preloadPath, startUrl);
   createTray();

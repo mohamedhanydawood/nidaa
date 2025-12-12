@@ -36,3 +36,28 @@ export function normalizeCountryName(country: string): string {
   
   return mappings[country] || country;
 }
+
+export function denormalizeCountryName(country: string): string {
+  const reverseMappings: Record<string, string> = {
+    "Egypt": "مصر",
+    "Saudi Arabia": "السعودية",
+    "United Arab Emirates": "الإمارات",
+    "Kuwait": "الكويت",
+    "Qatar": "قطر",
+    "Bahrain": "البحرين",
+    "Oman": "عمان",
+    "Jordan": "الأردن",
+    "Lebanon": "لبنان",
+    "Syria": "سوريا",
+    "Iraq": "العراق",
+    "Palestine": "فلسطين",
+    "Yemen": "اليمن",
+    "Morocco": "المغرب",
+    "Algeria": "الجزائر",
+    "Tunisia": "تونس",
+    "Libya": "ليبيا",
+    "Sudan": "السودان",
+  };
+  
+  return reverseMappings[country] || country;
+}

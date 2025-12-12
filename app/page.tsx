@@ -207,7 +207,7 @@ export default function Home() {
       <header className="bg-card px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
           {/* <span className="text-2xl">🕌</span> */}
-          <Image src="/icon.ico" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
+          <Image src="/icon.png" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
           <div>
             <h1 className="text-lg md:text-xl font-bold">نداء</h1>
             <p className="text-xs text-muted">
@@ -221,7 +221,7 @@ export default function Home() {
           </div>
         </div>
         <a
-          href="settings.html"
+          href={process.env.NODE_ENV === "development" ? "/settings" : "settings.html"}
           className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ⚙️ الإعدادات
@@ -231,6 +231,31 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4">
 
+        {/* Next Prayer - Big Card */}
+        {prayerData.nextPrayer && (
+          <div className="col-span-1 md:col-span-12 bg-linear-to-br from-accent/20 to-accent/5 border-2 border-accent/50 rounded-xl p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-right flex-1">
+                <p className="text-sm text-muted mb-2">الصلاة القادمة</p>
+                <h2 className="text-3xl md:text-5xl font-bold mb-2">{prayerData.nextPrayer.name}</h2>
+                <div className="flex items-center justify-center md:justify-start gap-2 text-muted">
+                  <span className="text-4xl md:text-6xl">
+                    {prayerIcons[prayerData.nextPrayer.englishName] || "🕌"}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-accent/20 backdrop-blur rounded-2xl p-6 md:p-8 border border-accent/30">
+                  <p className="text-sm text-muted mb-2">الوقت</p>
+                  <p className="text-4xl md:text-6xl font-bold text-accent">
+                    {formatTime(prayerData.nextPrayer.time)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* أوقات الصلوات */}
         <div className="col-span-1 md:col-span-12 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>
@@ -238,14 +263,8 @@ export default function Home() {
             {Object.keys(prayerData.times).map((key) => {
               const time24 = prayerData.times[key as keyof typeof prayerData.times];
               
-              // Check if this prayer time is in the future
-              const [hours, minutes] = time24.split(":").map(Number);
-              const prayerTime = new Date();
-              prayerTime.setHours(hours, minutes, 0, 0);
-              const isPrayerInFuture = prayerTime.getTime() > new Date().getTime();
-              
-              // Only highlight if it's the next prayer AND its time is in the future
-              const isNext = key === prayerData.nextPrayer.englishName && isPrayerInFuture;
+              // Highlight the next prayer based on server data
+              const isNext = key === prayerData.nextPrayer.englishName;
               
               return (
                 <div

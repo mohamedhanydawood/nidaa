@@ -1,4 +1,5 @@
-import { Notification } from "electron";
+import { Notification, nativeImage, app } from "electron";
+import { join } from "path";
 import {
   type DaySchedule,
   type PrayerKey,
@@ -6,6 +7,7 @@ import {
   msUntil,
   setSafeTimeout,
 } from "./prayerService.js";
+import { flashTaskbar } from "./window.js";
 
 type SchedulerConfig = {
   city: string;
@@ -15,6 +17,7 @@ type SchedulerConfig = {
   preAlertMinutes?: number; // minutes before prayer for heads-up
   autoPauseAtAdhan?: boolean;
   autoResumeAfterMs?: number | null; // e.g., resume after 7 minutes (adhan duration)
+  timeFormat?: "12" | "24";
 };
 
 export class PrayerScheduler {
@@ -95,15 +98,33 @@ export class PrayerScheduler {
   }
 
   private notifyPreAlert(key: PrayerKey, at: Date) {
-    const title = "نداء";
-    const body = `اقترب وقت صلاة ${this.arKey(key)} (${this.hhmm(at)})`;
-    new Notification({ title, body, silent: true }).show();
+    const title = `اقترب وقت صلاة ${this.arKey(key)} (${this.hhmm(at)})`;
+    
+    // On Windows, don't pass icon - it causes two icons to show
+    // Windows automatically uses the app icon from AppUserModelId
+    if (process.platform === "win32") {
+      new Notification({ title, silent: true }).show();
+    } else {
+      const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
+      const icon = nativeImage.createFromPath(iconPath);
+      new Notification({ title, silent: true, icon }).show();
+    }
   }
 
   private async onPrayerTime(key: PrayerKey) {
-    const title = "نداء";
-    const body = `حان الآن موعد صلاة ${this.arKey(key)}`;
-    new Notification({ title, body, silent: false }).show();
+    const title = `حان الآن موعد صلاة ${this.arKey(key)}`;
+    
+    // On Windows, don't pass icon - it causes two icons to show
+    if (process.platform === "win32") {
+      new Notification({ title, silent: false }).show();
+    } else {
+      const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
+      const icon = nativeImage.createFromPath(iconPath);
+      new Notification({ title, silent: false, icon }).show();
+    }
+    
+    // Flash taskbar to draw attention on Windows
+    flashTaskbar();
     
     // Auto-pause feature removed per user request
 
@@ -129,8 +150,15 @@ export class PrayerScheduler {
   }
 
   private hhmm(d: Date): string {
-    const h = d.getHours().toString().padStart(2, "0");
+    const h = d.getHours();
     const m = d.getMinutes().toString().padStart(2, "0");
-    return `${h}:${m}`;
+    
+    if (this.config.timeFormat === "12") {
+      const period = h >= 12 ? "م" : "ص";
+      const h12 = h % 12 || 12;
+      return `${h12}:${m} ${period}`;
+    }
+    
+    return `${h.toString().padStart(2, "0")}:${m}`;
   }
 }

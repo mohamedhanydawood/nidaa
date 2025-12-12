@@ -15,6 +15,10 @@ declare global {
       getStatistics: () => Promise<Statistics>;
       getWeekRecords: () => Promise<WeekRecord[]>;
       
+      // Test notifications
+      testPreAlertNotification: () => Promise<void>;
+      testAdhanNotification: () => Promise<void>;
+      
       // Events
       onPrayerTimesUpdated: (callback: (data: PrayerTimesData) => void) => void;
       onPrayerMarked: (callback: (data: { prayerName: string; done: boolean }) => void) => void;
@@ -29,6 +33,7 @@ export interface Settings {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  guideCompleted?: boolean;
 }
 
 export interface PrayerTimesData {

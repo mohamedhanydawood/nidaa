@@ -10,6 +10,9 @@
     "build": "next build && tsc -p electron/tsconfig.json",
     "start": "electron .",
     "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:mac": "npm run build && electron-builder --mac",
     "lint": "eslint ."
   },
   "description": "A desktop application to notify you of Islamic prayer times based on your location.",
@@ -19,7 +22,8 @@
     "luxon": "^3.7.2",
     "next": "^16.0.7",
     "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react-dom": "^19.2.1",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -34,6 +38,7 @@
     "electron-builder": "^26.0.12",
     "eslint": "^9",
     "eslint-config-next": "^16.0.7",
+    "png2icons": "^2.0.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
@@ -42,12 +47,21 @@
   "build": {
     "appId": "com.nidaa.app",
     "productName": "Nidaa",
-    "icon": "public/icon.ico",
+    "icon": "assets/icon.ico",
     "compression": "maximum",
     "directories": {
       "buildResources": "assets",
       "output": "dist"
     },
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "files": [
       "out/**/*",
       "build-electron/**/*",
@@ -73,10 +87,9 @@
           ]
         }
       ],
-      "icon": "public/icon.ico",
+      "icon": "assets/icon.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "requestedExecutionLevel": "asInvoker",
-      "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false
     },
     "nsis": {
@@ -84,14 +97,17 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "نداء"
+      "shortcutName": "نداء",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico"
     },
     "mac": {
       "target": [
         "dmg",
         "zip"
       ],
-      "icon": "public/icon.icns",
+      "icon": "assets/icon.icns",
       "category": "public.app-category.lifestyle"
     },
     "linux": {
@@ -99,7 +115,7 @@
         "AppImage",
         "deb"
       ],
-      "icon": "public/icon.png",
+      "icon": "assets/icon.png",
       "category": "Utility"
     }
   }

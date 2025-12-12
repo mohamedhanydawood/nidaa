@@ -1,4 +1,5 @@
-import { ipcMain, BrowserWindow } from "electron";
+import { ipcMain, BrowserWindow, Notification, nativeImage, app } from "electron";
+import { join } from "path";
 import { AppSettings, ARABIC_PRAYER_NAMES, ARABIC_DAY_NAMES } from "./types.js";
 import { getSettings, saveSettings, getRecords, saveRecords } from "./store.js";
 import { validateSettings, validatePrayerName, normalizeCountryName } from "./validators.js";
@@ -20,6 +21,7 @@ export async function startScheduler(settings: AppSettings) {
     preAlertMinutes: settings.notifyBefore,
     autoPauseAtAdhan: false,
     autoResumeAfterMs: undefined,
+    timeFormat: settings.timeFormat,
   });
   
   try {
@@ -325,6 +327,47 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
     }
     
     return weekData;
+  });
+
+  // Test notifications
+  ipcMain.handle("notification:testPreAlert", async () => {
+    const settings = getSettings();
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes().toString().padStart(2, "0");
+    
+    let timeStr: string;
+    if (settings.timeFormat === "12") {
+      const period = h >= 12 ? "م" : "ص";
+      const h12 = h % 12 || 12;
+      timeStr = `${h12}:${m} ${period}`;
+    } else {
+      timeStr = `${h.toString().padStart(2, "0")}:${m}`;
+    }
+    
+    const title = `اقترب وقت صلاة الظهر (${timeStr})`;
+    // On Windows, don't pass icon - it causes two icons to show
+    // Windows automatically uses the app icon from AppUserModelId
+    if (process.platform === "win32") {
+      new Notification({ title, silent: true }).show();
+    } else {
+      const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
+      const icon = nativeImage.createFromPath(iconPath);
+      new Notification({ title, silent: true, icon }).show();
+    }
+  });
+
+  ipcMain.handle("notification:testAdhan", async () => {
+    const title = "حان الآن موعد صلاة الظهر";
+    
+    // On Windows, don't pass icon - it causes two icons to show
+    if (process.platform === "win32") {
+      new Notification({ title, silent: false }).show();
+    } else {
+      const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
+      const icon = nativeImage.createFromPath(iconPath);
+      new Notification({ title, silent: false, icon }).show();
+    }
   });
 }
 

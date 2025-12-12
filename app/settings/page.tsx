@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import { toast } from "sonner";
 
 type Settings = {
   city: string;
@@ -12,10 +14,29 @@ type Settings = {
 };
 
 const methods: Array<{ id: number; name: string }> = [
-  { id: 5, name: "Egyptian General Authority" },
-  { id: 2, name: "Islamic Society of North America" },
-  { id: 3, name: "Muslim World League" },
-  { id: 4, name: "Umm Al-Qura, Makkah" },
+  { id: 0, name: "Shia Ithna-Ashari" },
+  { id: 1, name: "University of Islamic Sciences, Karachi" },
+  { id: 2, name: "Islamic Society of North America (ISNA)" },
+  { id: 3, name: "Muslim World League (MWL)" },
+  { id: 4, name: "Umm Al-Qura University, Makkah" },
+  { id: 5, name: "Egyptian General Authority of Survey" },
+  { id: 7, name: "Institute of Geophysics, University of Tehran" },
+  { id: 8, name: "Gulf Region" },
+  { id: 9, name: "Kuwait" },
+  { id: 10, name: "Qatar" },
+  { id: 11, name: "Majlis Ugama Islam Singapura, Singapore" },
+  { id: 12, name: "Union Organization Islamic de France" },
+  { id: 13, name: "Diyanet İşleri Başkanlığı, Turkey" },
+  { id: 14, name: "Spiritual Administration of Muslims of Russia" },
+  { id: 15, name: "Moonsighting Committee Worldwide" },
+  { id: 16, name: "Dubai (unofficial)" },
+  { id: 17, name: "Jabatan Kemajuan Islam Malaysia (JAKIM)" },
+  { id: 18, name: "Tunisia" },
+  { id: 19, name: "Algeria" },
+  { id: 20, name: "KEMENAG - Kementerian Agama Republik Indonesia" },
+  { id: 21, name: "Morocco" },
+  { id: 22, name: "Comunidade Islamica de Lisboa" },
+  { id: 23, name: "Ministry of Awqaf, Islamic Affairs and Holy Places, Jordan" },
 ];
 
 const countries: Array<{ code: string; name: string; cities: string[] }> = [
@@ -124,12 +145,12 @@ const countries: Array<{ code: string; name: string; cities: string[] }> = [
 
 export default function SettingsPage() {
   const [cfg, setCfg] = useState<Settings>({
-    city: "Cairo",
-    country: "مصر",
+    city: "",
+    country: "",
     method: 5,
     madhab: 1,
-    notifyBefore: 5,
-    timeFormat: "24",
+    notifyBefore: 0,
+    timeFormat: "12",
   });
   const [saving, setSaving] = useState(false);
 
@@ -138,7 +159,35 @@ export default function SettingsPage() {
       try {
         if (window.electron?.getSettings) {
           const settings = await window.electron.getSettings();
-          setCfg(settings);
+          
+          // Convert English country names back to Arabic for display
+          const countryMappings: Record<string, string> = {
+            "Egypt": "مصر",
+            "Saudi Arabia": "السعودية",
+            "United Arab Emirates": "الإمارات",
+            "Kuwait": "الكويت",
+            "Qatar": "قطر",
+            "Bahrain": "البحرين",
+            "Oman": "عمان",
+            "Jordan": "الأردن",
+            "Lebanon": "لبنان",
+            "Syria": "سوريا",
+            "Iraq": "العراق",
+            "Palestine": "فلسطين",
+            "Yemen": "اليمن",
+            "Morocco": "المغرب",
+            "Algeria": "الجزائر",
+            "Tunisia": "تونس",
+            "Libya": "ليبيا",
+            "Sudan": "السودان",
+          };
+          
+          const displayCountry = countryMappings[settings.country] || settings.country;
+          
+          setCfg({
+            ...settings,
+            country: displayCountry
+          });
         }
       } catch {
         console.log("Using defaults");
@@ -148,20 +197,29 @@ export default function SettingsPage() {
   }, []);
 
   async function save() {
+    // Validate required fields
+    if (!cfg.country || !cfg.city) {
+      toast.error("الرجاء اختيار الدولة والمدينة");
+      return;
+    }
+    
     setSaving(true);
     console.log("Saving settings...", cfg);
     try {
       if (window.electron?.updateSettings) {
         const result = await window.electron.updateSettings(cfg);
         console.log("Settings saved successfully:", result);
-        alert("✓ تم حفظ الإعدادات");
+        toast.success("تم حفظ الإعدادات بنجاح", {
+          description: "سيتم تطبيق التغييرات فوراً",
+          duration: 3000,
+        });
       } else {
         console.error("window.electron.updateSettings is not available");
-        alert("خطأ: التطبيق يعمل في وضع الويب. استخدم Electron.");
+        toast.error("خطأ: التطبيق يعمل في وضع الويب");
       }
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("خطأ في الحفظ");
+      toast.error("حدث خطأ أثناء الحفظ");
     } finally {
       setSaving(false);
     }
@@ -170,13 +228,13 @@ export default function SettingsPage() {
   return (
     <div dir="rtl" className="h-screen text-foreground flex flex-col">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
+      <header className="bg-card px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
-          <span className="text-xl md:text-2xl">🕌</span>
+          <Image src="/icon.png" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
           <h1 className="text-lg md:text-xl font-bold">نداء - الإعدادات</h1>
         </div>
         <a
-          href="index.html"
+          href={process.env.NODE_ENV === "development" ? "/" : "index.html"}
           className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
         >
           ← رجوع
@@ -190,7 +248,7 @@ export default function SettingsPage() {
           <div className="bg-card p-4 rounded-lg">
             <label className="block text-sm font-semibold text-muted mb-2">الدولة</label>
             <select
-              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.country}
               onChange={(e) => {
                 const country = e.target.value;
@@ -198,8 +256,11 @@ export default function SettingsPage() {
                 setCfg({ ...cfg, country, city: defCity });
               }}
             >
+              <option value="" disabled className="bg-card text-muted">
+                اختر دولة
+              </option>
               {countries.map((c) => (
-                <option key={c.code} value={c.name}>
+                <option key={c.code} value={c.name} className="bg-card text-foreground">
                   {c.name}
                 </option>
               ))}
@@ -210,15 +271,18 @@ export default function SettingsPage() {
           <div className="bg-card p-4 rounded-lg">
             <label className="block text-sm font-semibold text-muted mb-2">المدينة</label>
             <select
-              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none mb-2"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none mb-2 [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.city}
               onChange={(e) => {
                 const value = e.target.value;
                 setCfg({ ...cfg, city: value });
               }}
             >
+              <option value="" disabled className="bg-card text-muted">
+                اختر مدينة
+              </option>
               {(countries.find((c) => c.name === cfg.country)?.cities || []).map((city) => (
-                <option key={city} value={city}>
+                <option key={city} value={city} className="bg-card text-foreground">
                   {city}
                 </option>
               ))}
@@ -229,12 +293,15 @@ export default function SettingsPage() {
           <div className="bg-card p-4 rounded-lg">
             <label className="block text-sm font-semibold text-muted mb-2">طريقة الحساب</label>
             <select
-              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none"
+              className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.method}
               onChange={(e) => setCfg({ ...cfg, method: Number(e.target.value) })}
             >
+              <option value="" disabled className="bg-card text-muted">
+                اختر طريقة حساب
+              </option>
               {methods.map((m) => (
-                <option key={m.id} value={m.id}>
+                <option key={m.id} value={m.id} className="bg-card text-foreground">
                   {m.name}
                 </option>
               ))}
@@ -282,6 +349,39 @@ export default function SettingsPage() {
                 />
                 <span>12 ساعة</span>
               </label>
+            </div>
+          </div>
+
+          {/* Test Notifications */}
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-3">تجربة الإشعارات</label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={async () => {
+                  if (window.electron?.testPreAlertNotification) {
+                    await window.electron.testPreAlertNotification();
+                    toast.info("تم إرسال تجربة تنبيه قبل الأذان");
+                  } else {
+                    toast.error("التطبيق يعمل في وضع الويب");
+                  }
+                }}
+                className="px-4 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-sm"
+              >
+                🔔 تجربة تنبيه قبل الأذان
+              </button>
+              <button
+                onClick={async () => {
+                  if (window.electron?.testAdhanNotification) {
+                    await window.electron.testAdhanNotification();
+                    toast.info("تم إرسال تجربة إشعار الأذان");
+                  } else {
+                    toast.error("التطبيق يعمل في وضع الويب");
+                  }
+                }}
+                className="px-4 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-sm"
+              >
+                📢 تجربة إشعار الأذان
+              </button>
             </div>
           </div>
 

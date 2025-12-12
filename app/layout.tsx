@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
@@ -33,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className={`${ibmPlexArabic.variable} antialiased relative min-h-screen`}>
+        <Toaster position="top-center" dir="rtl" richColors />
 
         {/* Content wrapper */}
         <div className="relative z-10">

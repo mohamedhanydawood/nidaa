@@ -70,12 +70,47 @@ export async function fetchTodayScheduleByCity(params: {
   api.searchParams.set("method", String(method));
   api.searchParams.set("madhab", String(madhab));
 
-  const res = await fetch(api, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Aladhan API error ${res.status}`);
+  // Retry logic with increased timeout
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+      
+      const res = await fetch(api, { 
+        cache: "no-store",
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        throw new Error(`Aladhan API error ${res.status}`);
+      }
+      
+      // Success! Break retry loop
+      lastError = null;
+      
+      const json = (await res.json()) as any;
+      return parsePrayerResponse(json);
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`[Prayer API] Attempt ${attempt}/3 failed:`, error);
+      
+      if (attempt < 3) {
+        // Wait before retry (exponential backoff)
+        const delay = attempt * 2000; // 2s, 4s
+        console.log(`[Prayer API] Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const json = (await res.json()) as any;
+  
+  // All retries failed
+  throw lastError || new Error("Failed to fetch prayer times after 3 attempts");
+}
+
+function parsePrayerResponse(json: any): DaySchedule {
   const timings: PrayerTimings = json?.data?.timings;
   const metaTzOffset: number | undefined = json?.data?.meta?.timezone
     ? undefined

@@ -7,16 +7,24 @@ let isQuitting = false;
 
 export function createTray() {
   const isDev = !app.isPackaged;
-  const publicPath = isDev
-    ? path.join(process.cwd(), 'public')
-    : path.join(process.resourcesPath, 'out');
+  // In dev: read from project assets folder
+  // In production: extraResources are in process.resourcesPath/assets
+  const assetsPath = isDev
+    ? path.join(process.cwd(), 'assets')
+    : path.join(process.resourcesPath, 'assets');
   
   const iconPath = process.platform === 'darwin'
-    ? path.join(publicPath, 'icon.icns')
+    ? path.join(assetsPath, 'icon.icns')
     : process.platform === 'linux'
-    ? path.join(publicPath, 'icon.png')
-    : path.join(publicPath, 'icon.ico');
+    ? path.join(assetsPath, 'icon.png')
+    : path.join(assetsPath, 'icon.ico');
+  
   const icon = nativeImage.createFromPath(iconPath);
+  
+  // Debug: log icon path and status
+  console.log('[Tray] Icon path:', iconPath);
+  console.log('[Tray] Icon isEmpty:', icon.isEmpty());
+  
   tray = new Tray(icon);
   
   const contextMenu = Menu.buildFromTemplate([
@@ -63,21 +71,29 @@ export function createTray() {
 
 export function createWindow(preloadPath: string, startUrl: string): BrowserWindow {
   const isDev = !app.isPackaged;
-  const publicPath = isDev
-    ? path.join(process.cwd(), 'public')
-    : path.join(process.resourcesPath, 'out');
+  // In dev: read from project assets folder
+  // In production: extraResources are in process.resourcesPath/assets
+  const assetsPath = isDev
+    ? path.join(process.cwd(), 'assets')
+    : path.join(process.resourcesPath, 'assets');
   
   const iconPath = process.platform === 'darwin'
-    ? path.join(publicPath, 'icon.icns')
+    ? path.join(assetsPath, 'icon.icns')
     : process.platform === 'linux'
-    ? path.join(publicPath, 'icon.png')
-    : path.join(publicPath, 'icon.ico');
+    ? path.join(assetsPath, 'icon.png')
+    : path.join(assetsPath, 'icon.ico');
+  
+  // Debug: log icon path and status
+  console.log('[Window] Icon path:', iconPath);
+  const testIcon = nativeImage.createFromPath(iconPath);
+  console.log('[Window] Icon isEmpty:', testIcon.isEmpty());
   
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
     icon: iconPath,
+    title: 'نداء',
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -104,4 +120,16 @@ export function getMainWindow(): BrowserWindow | null {
 
 export function setQuitting(value: boolean) {
   isQuitting = value;
+}
+
+export function flashTaskbar() {
+  if (mainWindow && process.platform === 'win32') {
+    mainWindow.flashFrame(true);
+    // Stop flashing after 5 seconds
+    setTimeout(() => {
+      if (mainWindow) {
+        mainWindow.flashFrame(false);
+      }
+    }, 5000);
+  }
 }

@@ -5,15 +5,17 @@ export type AppSettings = {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  guideCompleted?: boolean;
 };
 
 export const defaultSettings: AppSettings = {
-  city: "Cairo",
-  country: "Egypt",
+  city: "",
+  country: "",
   method: 5,
   madhab: 1,
   notifyBefore: 5,
-  timeFormat: "24",
+  timeFormat: "12",
+  guideCompleted: false,
 };
 
 export const ALLOWED_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
