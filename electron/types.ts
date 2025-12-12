@@ -5,6 +5,7 @@ export type AppSettings = {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  notificationsEnabled: boolean;
   guideCompleted?: boolean;
 };
 
@@ -15,6 +16,7 @@ export const defaultSettings: AppSettings = {
   madhab: 1,
   notifyBefore: 5,
   timeFormat: "12",
+  notificationsEnabled: true,
   guideCompleted: false,
 };
 

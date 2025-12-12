@@ -18,6 +18,7 @@ type SchedulerConfig = {
   autoPauseAtAdhan?: boolean;
   autoResumeAfterMs?: number | null; // e.g., resume after 7 minutes (adhan duration)
   timeFormat?: "12" | "24";
+  notificationsEnabled?: boolean;
 };
 
 export class PrayerScheduler {
@@ -98,6 +99,11 @@ export class PrayerScheduler {
   }
 
   private notifyPreAlert(key: PrayerKey, at: Date) {
+    // Check if notifications are enabled
+    if (this.config.notificationsEnabled === false) {
+      return;
+    }
+    
     const title = `اقترب وقت صلاة ${this.arKey(key)} (${this.hhmm(at)})`;
     
     // On Windows, don't pass icon - it causes two icons to show
@@ -112,6 +118,13 @@ export class PrayerScheduler {
   }
 
   private async onPrayerTime(key: PrayerKey) {
+    // Check if notifications are enabled
+    if (this.config.notificationsEnabled === false) {
+      // Still plan next timers even if notifications are disabled
+      this.planTimers();
+      return;
+    }
+    
     const title = `حان الآن موعد صلاة ${this.arKey(key)}`;
     
     // On Windows, don't pass icon - it causes two icons to show

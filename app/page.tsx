@@ -230,32 +230,6 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4">
-
-        {/* Next Prayer - Big Card */}
-        {prayerData.nextPrayer && (
-          <div className="col-span-1 md:col-span-12 bg-linear-to-br from-accent/20 to-accent/5 border-2 border-accent/50 rounded-xl p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-right flex-1">
-                <p className="text-sm text-muted mb-2">الصلاة القادمة</p>
-                <h2 className="text-3xl md:text-5xl font-bold mb-2">{prayerData.nextPrayer.name}</h2>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-muted">
-                  <span className="text-4xl md:text-6xl">
-                    {prayerIcons[prayerData.nextPrayer.englishName] || "🕌"}
-                  </span>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="bg-accent/20 backdrop-blur rounded-2xl p-6 md:p-8 border border-accent/30">
-                  <p className="text-sm text-muted mb-2">الوقت</p>
-                  <p className="text-4xl md:text-6xl font-bold text-accent">
-                    {formatTime(prayerData.nextPrayer.time)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* أوقات الصلوات */}
         <div className="col-span-1 md:col-span-12 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>

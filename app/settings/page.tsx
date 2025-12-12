@@ -11,6 +11,7 @@ type Settings = {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  notificationsEnabled: boolean;
 };
 
 const methods: Array<{ id: number; name: string }> = [
@@ -151,6 +152,7 @@ export default function SettingsPage() {
     madhab: 1,
     notifyBefore: 0,
     timeFormat: "12",
+    notificationsEnabled: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -349,6 +351,28 @@ export default function SettingsPage() {
                 />
                 <span>12 ساعة</span>
               </label>
+            </div>
+          </div>
+
+          {/* Notifications Toggle */}
+          <div className="bg-card p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-semibold text-muted mb-1">تفعيل الإشعارات</label>
+                <p className="text-xs text-muted">إشعارات مواقيت الصلاة والتذكيرات</p>
+              </div>
+              <button
+                onClick={() => setCfg({ ...cfg, notificationsEnabled: !cfg.notificationsEnabled })}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  cfg.notificationsEnabled ? "bg-accent" : "bg-muted"
+                }`}
+              >
+                <div
+                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                    cfg.notificationsEnabled ? "right-0.5" : "right-7"
+                  }`}
+                />
+              </button>
             </div>
           </div>
 

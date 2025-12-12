@@ -22,6 +22,7 @@ export async function startScheduler(settings: AppSettings) {
     autoPauseAtAdhan: false,
     autoResumeAfterMs: undefined,
     timeFormat: settings.timeFormat,
+    notificationsEnabled: settings.notificationsEnabled,
   });
   
   try {

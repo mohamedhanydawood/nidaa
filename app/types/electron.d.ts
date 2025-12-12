@@ -33,6 +33,7 @@ export interface Settings {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  notificationsEnabled: boolean;
   guideCompleted?: boolean;
 }
 
