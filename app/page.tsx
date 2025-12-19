@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import WeeklyHeatmap from "./components/WeeklyHeatmap";
+import WeeklyHeatmap from "../components/WeeklyHeatmap";
+import { useUpdateInfo } from "../components/UpdateNotifier";
 
 type Settings = {
   city: string;
@@ -10,6 +11,7 @@ type Settings = {
   madhab: number;
   notifyBefore: number;
   timeFormat: "12" | "24";
+  notificationsEnabled?: boolean;
 };
 
 export default function Home() {
@@ -20,6 +22,7 @@ export default function Home() {
     madhab: 1,
     notifyBefore: 5,
     timeFormat: "24",
+    notificationsEnabled: true,
   });
 
   const [prayerData, setPrayerData] = useState({
@@ -168,20 +171,29 @@ export default function Home() {
 
   const handleTogglePrayer = async (prayer: string) => {
     try {
+      // Optimistic update - update UI immediately
+      setPrayerData((prev) => ({
+        ...prev,
+        checked: {
+          ...prev.checked,
+          [prayer]: !prev.checked[prayer as keyof typeof prev.checked],
+        },
+      }));
+
+      // Then save to electron
       if (window.electron?.markPrayerDone) {
-        const success = await window.electron.markPrayerDone(prayer);
-        if (success) {
-          setPrayerData((prev) => ({
-            ...prev,
-            checked: {
-              ...prev.checked,
-              [prayer]: !prev.checked[prayer as keyof typeof prev.checked],
-            },
-          }));
-        }
+        await window.electron.markPrayerDone(prayer);
       }
     } catch (error) {
       console.error("Error marking prayer:", error);
+      // Revert on error
+      setPrayerData((prev) => ({
+        ...prev,
+        checked: {
+          ...prev.checked,
+          [prayer]: !prev.checked[prayer as keyof typeof prev.checked],
+        },
+      }));
     }
   };
 
@@ -200,6 +212,8 @@ export default function Home() {
     Maghrib: "🌆",
     Isha: "🌙",
   };
+
+  const updateInfo = useUpdateInfo();
 
   return (
     <div dir="rtl" className="h-screen text-foreground flex flex-col">
@@ -230,6 +244,58 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4">
+        {/* Update Banner */}
+        {updateInfo?.available && (
+          <div className="col-span-1 md:col-span-12">
+            {updateInfo.downloaded ? (
+              <div className="bg-green-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg animate-pulse">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="font-semibold">تم تحميل التحديث {updateInfo.version}</p>
+                    <p className="text-sm opacity-90">جاري إعادة التشغيل...</p>
+                  </div>
+                </div>
+                <div className="animate-spin text-2xl">⚙️</div>
+              </div>
+            ) : updateInfo.downloading ? (
+              <div className="bg-blue-600 text-white rounded-lg p-4 shadow-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin text-2xl">⬇️</div>
+                    <div>
+                      <p className="font-semibold">جاري تحميل التحديث {updateInfo.version}</p>
+                      <p className="text-sm opacity-90">{updateInfo.downloadProgress}% مكتمل</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="w-full bg-blue-800 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-white h-full transition-all duration-300 ease-out"
+                    style={{ width: `${updateInfo.downloadProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-yellow-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <p className="font-semibold">تحديث جديد متاح</p>
+                    <p className="text-sm opacity-90">الإصدار {updateInfo.version} جاهز للتحميل</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => window.electron?.downloadUpdate()}
+                  className="px-4 py-2 bg-white text-yellow-600 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+                >
+                  تحميل الآن
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* أوقات الصلوات */}
         <div className="col-span-1 md:col-span-12 bg-card rounded-lg p-4">
           <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>

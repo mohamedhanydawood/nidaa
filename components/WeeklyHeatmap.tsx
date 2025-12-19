@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import type { WeekRecord } from "../types/electron";
+import type { WeekRecord } from "../app/types/electron";
 
 export default function WeeklyHeatmap() {
   const [weekData, setWeekData] = useState<WeekRecord[]>([]);

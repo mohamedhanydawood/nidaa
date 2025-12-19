@@ -12,6 +12,7 @@ type Settings = {
   notifyBefore: number;
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
+  autoStart: boolean;
 };
 
 const methods: Array<{ id: number; name: string }> = [
@@ -150,11 +151,13 @@ export default function SettingsPage() {
     country: "",
     method: 5,
     madhab: 1,
-    notifyBefore: 0,
+    notifyBefore: 5,
     timeFormat: "12",
     notificationsEnabled: true,
+    autoStart: true,
   });
   const [saving, setSaving] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("");
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -191,6 +194,12 @@ export default function SettingsPage() {
             country: displayCountry
           });
         }
+        
+        // Get app version from Electron
+        if (window.electron?.getAppVersion) {
+          const version = await window.electron.getAppVersion();
+          setAppVersion(version);
+        }
       } catch {
         console.log("Using defaults");
       }
@@ -211,8 +220,14 @@ export default function SettingsPage() {
       if (window.electron?.updateSettings) {
         const result = await window.electron.updateSettings(cfg);
         console.log("Settings saved successfully:", result);
+        
+        // Success message with notification status
+        const notificationStatus = cfg.notificationsEnabled 
+          ? "✓ الإشعارات مفعلة" 
+          : "الإشعارات معطلة";
+        
         toast.success("تم حفظ الإعدادات بنجاح", {
-          description: "سيتم تطبيق التغييرات فوراً",
+          description: `سيتم تطبيق التغييرات فوراً • ${notificationStatus}`,
           duration: 3000,
         });
       } else {
@@ -356,15 +371,29 @@ export default function SettingsPage() {
 
           {/* Notifications Toggle */}
           <div className="bg-card p-4 rounded-lg">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <label className="block text-sm font-semibold text-muted mb-1">تفعيل الإشعارات</label>
                 <p className="text-xs text-muted">إشعارات مواقيت الصلاة والتذكيرات</p>
               </div>
               <button
-                onClick={() => setCfg({ ...cfg, notificationsEnabled: !cfg.notificationsEnabled })}
+                onClick={() => {
+                  const newValue = !cfg.notificationsEnabled;
+                  setCfg({ ...cfg, notificationsEnabled: newValue });
+                  if (newValue) {
+                    toast.success("✓ الإشعارات مفعلة", {
+                      description: "ستتلقى إشعارات مواقيت الصلاة",
+                      duration: 2500,
+                    });
+                  } else {
+                    toast.info("الإشعارات معطلة", {
+                      description: "لن تتلقى إشعارات مواقيت الصلاة",
+                      duration: 2500,
+                    });
+                  }
+                }}
                 className={`relative w-14 h-7 rounded-full transition-colors ${
-                  cfg.notificationsEnabled ? "bg-accent" : "bg-muted"
+                  cfg.notificationsEnabled ? "bg-green-600" : "bg-red-600"
                 }`}
               >
                 <div
@@ -374,14 +403,71 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
+            {cfg.notificationsEnabled && (
+              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md">
+                <span>✓</span>
+                <span>الإشعارات مفعلة</span>
+              </div>
+            )}
+          </div>
+
+          {/* Auto-start Toggle */}
+          <div className="bg-card p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <label className="block text-sm font-semibold text-muted mb-1">التشغيل التلقائي</label>
+                <p className="text-xs text-muted">تشغيل التطبيق عند بدء Windows</p>
+              </div>
+              <button
+                onClick={() => {
+                  const newValue = !cfg.autoStart;
+                  setCfg({ ...cfg, autoStart: newValue });
+                  if (newValue) {
+                    toast.success("✓ التشغيل التلقائي مفعل", {
+                      description: "سيعمل التطبيق تلقائياً مع Windows",
+                      duration: 2500,
+                    });
+                  } else {
+                    toast.info("التشغيل التلقائي معطل", {
+                      description: "يجب تشغيل التطبيق يدوياً",
+                      duration: 2500,
+                    });
+                  }
+                }}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  cfg.autoStart ? "bg-green-600" : "bg-gray-400"
+                }`}
+              >
+                <div
+                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                    cfg.autoStart ? "right-0.5" : "right-7"
+                  }`}
+                />
+              </button>
+            </div>
+            {cfg.autoStart && (
+              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md">
+                <span>✓</span>
+                <span>سيعمل التطبيق مع Windows</span>
+              </div>
+            )}
           </div>
 
           {/* Test Notifications */}
           <div className="bg-card p-4 rounded-lg">
             <label className="block text-sm font-semibold text-muted mb-3">تجربة الإشعارات</label>
+            {!cfg.notificationsEnabled && (
+              <div className="mb-3 text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-md">
+                ⚠️ الإشعارات معطلة حالياً. فعّل الإشعارات لتجربتها.
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={async () => {
+                  if (!cfg.notificationsEnabled) {
+                    toast.warning("الرجاء تفعيل الإشعارات أولاً");
+                    return;
+                  }
                   if (window.electron?.testPreAlertNotification) {
                     await window.electron.testPreAlertNotification();
                     toast.info("تم إرسال تجربة تنبيه قبل الأذان");
@@ -389,12 +475,21 @@ export default function SettingsPage() {
                     toast.error("التطبيق يعمل في وضع الويب");
                   }
                 }}
-                className="px-4 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-sm"
+                disabled={!cfg.notificationsEnabled}
+                className={`px-4 py-2 rounded-md transition-colors text-sm ${
+                  cfg.notificationsEnabled 
+                    ? "bg-card-hover hover:bg-input cursor-pointer" 
+                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                }`}
               >
                 🔔 تجربة تنبيه قبل الأذان
               </button>
               <button
                 onClick={async () => {
+                  if (!cfg.notificationsEnabled) {
+                    toast.warning("الرجاء تفعيل الإشعارات أولاً");
+                    return;
+                  }
                   if (window.electron?.testAdhanNotification) {
                     await window.electron.testAdhanNotification();
                     toast.info("تم إرسال تجربة إشعار الأذان");
@@ -402,7 +497,12 @@ export default function SettingsPage() {
                     toast.error("التطبيق يعمل في وضع الويب");
                   }
                 }}
-                className="px-4 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-sm"
+                disabled={!cfg.notificationsEnabled}
+                className={`px-4 py-2 rounded-md transition-colors text-sm ${
+                  cfg.notificationsEnabled 
+                    ? "bg-card-hover hover:bg-input cursor-pointer" 
+                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                }`}
               >
                 📢 تجربة إشعار الأذان
               </button>
@@ -424,6 +524,14 @@ export default function SettingsPage() {
             >
               إلغاء
             </a>
+          </div>
+
+          {/* Version Info */}
+          <div className="bg-card p-4 rounded-lg text-center ">
+            <p className="text-xs text-muted mb-1">نداء - تطبيق مواقيت الصلاة</p>
+            <p className="text-sm font-semibold text-foreground">
+              الإصدار {appVersion || "1.0.0"}
+            </p>
           </div>
         </div>
       </main>

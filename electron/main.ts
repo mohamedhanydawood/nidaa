@@ -5,6 +5,7 @@ import { readFile } from "fs/promises";
 import { createWindow, createTray, setQuitting } from "./window.js";
 import { registerIpcHandlers } from "./ipcHandlers.js";
 import { getSettings } from "./store.js";
+import { initAutoUpdater } from "./autoUpdater.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -85,12 +86,22 @@ app.whenReady().then(async () => {
   const settings = getSettings();
   const isFirstTime = !settings.guideCompleted;
   
+  // Log auto-start status on app launch (for debugging)
+  console.log("=== App Launch Info ===");
+  console.log("Auto-start enabled:", settings.autoStart);
+  console.log("Login item settings:", app.getLoginItemSettings());
+  console.log("First time user:", isFirstTime);
+  console.log("======================");
+  
   const startUrl = isDev
     ? (isFirstTime ? "http://localhost:3000/guide" : "http://localhost:3000")
     : (isFirstTime ? "app://guide.html" : "app://index.html");
 
   const mainWindow = createWindow(preloadPath, startUrl);
   createTray();
+  
+  // Initialize auto-updater
+  initAutoUpdater(mainWindow);
   
   // Register all IPC handlers
   await registerIpcHandlers(mainWindow);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Toaster } from "sonner";
+import UpdateNotifier from "../components/UpdateNotifier";
 import "./globals.css";
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
@@ -35,18 +36,13 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <body className={`${ibmPlexArabic.variable} antialiased relative min-h-screen`}>
         <Toaster position="top-center" dir="rtl" richColors />
-
-        {/* Content wrapper */}
-        <div className="relative z-10">
-          {/* <img
-            src="/background.jpg"
-            alt="Header Background"
-            width={1920}
-            height={200}
-            className="absolute top-0 left-0 w-full h-full object-cover z-[-1] opacity-25 pointer-events-none "
-          /> */}
-          {children}
-        </div>
+        
+        <UpdateNotifier>
+          {/* Content wrapper */}
+          <div className="relative z-10">
+            {children}
+          </div>
+        </UpdateNotifier>
       </body>
     </html>
   );

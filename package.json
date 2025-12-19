@@ -9,18 +9,21 @@
     "electron-dev": "concurrently \"tsc -p electron/tsconfig.json --watch\" \"cross-env NODE_ENV=development electron .\"",
     "build": "next build && tsc -p electron/tsconfig.json",
     "start": "electron .",
+    "resize-icons": "node scripts/resize-icons.js",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
-    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:linux": "npm run resize-icons && npm run build && electron-builder --linux",
     "dist:mac": "npm run build && electron-builder --mac",
     "lint": "eslint ."
   },
   "description": "A desktop application to notify you of Islamic prayer times based on your location.",
-  "author": "Your Name",
+  "author": "Mohamed Hany Dawood",
   "dependencies": {
+    "electron-log": "^5.4.3",
     "electron-store": "^11.0.2",
+    "electron-updater": "^6.6.2",
     "luxon": "^3.7.2",
-    "next": "^16.0.7",
+    "next": "^16.1.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "sonner": "^2.0.7"
@@ -49,6 +52,11 @@
     "productName": "Nidaa",
     "icon": "assets/icon.ico",
     "compression": "maximum",
+    "publish": {
+      "provider": "github",
+      "owner": "mohamedhanydawood",
+      "repo": "nidaa"
+    },
     "directories": {
       "buildResources": "assets",
       "output": "dist"
@@ -112,10 +120,9 @@
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "tar.gz"
       ],
-      "icon": "assets/icon.png",
+      "icon": "assets/icon-256.png",
       "category": "Utility"
     }
   }

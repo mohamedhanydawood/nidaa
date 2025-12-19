@@ -1,5 +1,6 @@
 import { Notification, nativeImage, app } from "electron";
 import { join } from "path";
+import { exec } from "child_process";
 import {
   type DaySchedule,
   type PrayerKey,
@@ -98,6 +99,33 @@ export class PrayerScheduler {
     this.timers.push(t);
   }
 
+  private playSound(soundFile: string) {
+    const isDev = process.env.NODE_ENV === "development";
+    const soundPath = isDev
+      ? join(process.cwd(), "assets", "audio", soundFile)
+      : join(process.resourcesPath, "assets", "audio", soundFile);
+    
+    // Use different commands based on platform
+    let command: string;
+    if (process.platform === "win32") {
+      // Windows: Use MediaPlayer from PresentationCore (supports MP3)
+      const escapedPath = soundPath.replace(/\\/g, '\\\\');
+      command = `powershell -c "Add-Type -AssemblyName presentationCore; $player = New-Object System.Windows.Media.MediaPlayer; $player.Open('${escapedPath}'); $player.Play(); Start-Sleep -Seconds 3"`;
+    } else if (process.platform === "darwin") {
+      // macOS: Use afplay
+      command = `afplay "${soundPath}"`;
+    } else {
+      // Linux: Use aplay or paplay
+      command = `paplay "${soundPath}" || aplay "${soundPath}"`;
+    }
+    
+    exec(command, (error) => {
+      if (error) {
+        console.error("Error playing sound:", error);
+      }
+    });
+  }
+
   private notifyPreAlert(key: PrayerKey, at: Date) {
     // Check if notifications are enabled
     if (this.config.notificationsEnabled === false) {
@@ -106,6 +134,10 @@ export class PrayerScheduler {
     
     const title = `اقترب وقت صلاة ${this.arKey(key)} (${this.hhmm(at)})`;
     
+    // Play custom sound
+    this.playSound("pray-time-almost-there.mp3");
+    
+    // Show notification without default sound
     // On Windows, don't pass icon - it causes two icons to show
     // Windows automatically uses the app icon from AppUserModelId
     if (process.platform === "win32") {
@@ -127,13 +159,17 @@ export class PrayerScheduler {
     
     const title = `حان الآن موعد صلاة ${this.arKey(key)}`;
     
+    // Play adhan sound
+    this.playSound("pray-time.mp3");
+    
+    // Show notification without default sound (we're using custom sound)
     // On Windows, don't pass icon - it causes two icons to show
     if (process.platform === "win32") {
-      new Notification({ title, silent: false }).show();
+      new Notification({ title, silent: true }).show();
     } else {
       const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
       const icon = nativeImage.createFromPath(iconPath);
-      new Notification({ title, silent: false, icon }).show();
+      new Notification({ title, silent: true, icon }).show();
     }
     
     // Flash taskbar to draw attention on Windows

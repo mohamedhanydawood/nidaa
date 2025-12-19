@@ -6,6 +6,7 @@ export type AppSettings = {
   notifyBefore: number;
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
+  autoStart: boolean;
   guideCompleted?: boolean;
 };
 
@@ -17,6 +18,7 @@ export const defaultSettings: AppSettings = {
   notifyBefore: 5,
   timeFormat: "12",
   notificationsEnabled: true,
+  autoStart: true,
   guideCompleted: false,
 };
 

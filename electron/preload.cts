@@ -3,6 +3,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
+  // App info
+  getAppVersion: () => ipcRenderer.invoke("app:version"),
+  
   // Settings
   getSettings: () => ipcRenderer.invoke("settings:get"),
   updateSettings: (settings: unknown) =>
@@ -20,6 +23,26 @@ contextBridge.exposeInMainWorld("electron", {
   // Test notifications
   testPreAlertNotification: () => ipcRenderer.invoke("notification:testPreAlert"),
   testAdhanNotification: () => ipcRenderer.invoke("notification:testAdhan"),
+
+  // Auto-update
+  checkForUpdates: () => ipcRenderer.invoke("update:check"),
+  downloadUpdate: () => ipcRenderer.invoke("update:download"),
+  installUpdate: () => ipcRenderer.invoke("update:install"),
+  onUpdateAvailable: (callback: (info: unknown) => void) => {
+    ipcRenderer.on("update:available", (_event: any, info: any) => callback(info));
+  },
+  onUpdateNotAvailable: (callback: () => void) => {
+    ipcRenderer.on("update:not-available", () => callback());
+  },
+  onUpdateDownloadProgress: (callback: (progress: unknown) => void) => {
+    ipcRenderer.on("update:download-progress", (_event: any, progress: any) => callback(progress));
+  },
+  onUpdateDownloaded: (callback: (info: unknown) => void) => {
+    ipcRenderer.on("update:downloaded", (_event: any, info: any) => callback(info));
+  },
+  onUpdateError: (callback: (error: unknown) => void) => {
+    ipcRenderer.on("update:error", (_event: any, error: any) => callback(error));
+  },
 
   // Events
   onPrayerTimesUpdated: (callback: (data: unknown) => void) => {

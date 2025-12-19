@@ -7,6 +7,9 @@ declare global {
       getSettings: () => Promise<Settings>;
       updateSettings: (settings: Partial<Settings>) => Promise<Settings>;
       
+      // App info
+      getAppVersion: () => Promise<string>;
+      
       // Prayer times
       getPrayerTimes: () => Promise<PrayerTimesData | null>;
       markPrayerDone: (prayerName: string) => Promise<boolean>;
@@ -18,6 +21,16 @@ declare global {
       // Test notifications
       testPreAlertNotification: () => Promise<void>;
       testAdhanNotification: () => Promise<void>;
+      
+      // Auto-update
+      checkForUpdates: () => Promise<void>;
+      downloadUpdate: () => Promise<void>;
+      installUpdate: () => Promise<void>;
+      onUpdateAvailable: (callback: (info: { version: string; releaseDate: string }) => void) => void;
+      onUpdateNotAvailable: (callback: () => void) => void;
+      onUpdateDownloadProgress: (callback: (progress: { percent: number; transferred: number; total: number }) => void) => void;
+      onUpdateDownloaded: (callback: (info: { version: string }) => void) => void;
+      onUpdateError: (callback: (error: { message: string }) => void) => void;
       
       // Events
       onPrayerTimesUpdated: (callback: (data: PrayerTimesData) => void) => void;
@@ -34,6 +47,7 @@ export interface Settings {
   notifyBefore: number;
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
+  autoStart: boolean;
   guideCompleted?: boolean;
 }
 

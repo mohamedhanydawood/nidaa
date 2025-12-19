@@ -1,12 +1,41 @@
 import { ipcMain, BrowserWindow, Notification, nativeImage, app } from "electron";
 import { join } from "path";
+import { exec } from "child_process";
 import { AppSettings, ARABIC_PRAYER_NAMES, ARABIC_DAY_NAMES } from "./types.js";
 import { getSettings, saveSettings, getRecords, saveRecords } from "./store.js";
 import { validateSettings, validatePrayerName, normalizeCountryName } from "./validators.js";
 import { fetchTodayScheduleByCity } from "./prayerService.js";
 import { PrayerScheduler } from "./scheduler.js";
+import { checkForUpdates, downloadUpdate, quitAndInstall } from "./autoUpdater.js";
 
 let scheduler: PrayerScheduler | null = null;
+
+function playSound(soundFile: string) {
+  const isDev = process.env.NODE_ENV === "development";
+  const soundPath = isDev
+    ? join(process.cwd(), "assets", "audio", soundFile)
+    : join(process.resourcesPath, "assets", "audio", soundFile);
+  
+  // Use different commands based on platform
+  let command: string;
+  if (process.platform === "win32") {
+    // Windows: Use MediaPlayer from PresentationCore (supports MP3)
+    const escapedPath = soundPath.replace(/\\/g, '\\\\');
+    command = `powershell -c "Add-Type -AssemblyName presentationCore; $player = New-Object System.Windows.Media.MediaPlayer; $player.Open('${escapedPath}'); $player.Play(); Start-Sleep -Seconds 3"`;
+  } else if (process.platform === "darwin") {
+    // macOS: Use afplay
+    command = `afplay "${soundPath}"`;
+  } else {
+    // Linux: Use aplay or paplay
+    command = `paplay "${soundPath}" || aplay "${soundPath}"`;
+  }
+  
+  exec(command, (error) => {
+    if (error) {
+      console.error("Error playing sound:", error);
+    }
+  });
+}
 
 export async function startScheduler(settings: AppSettings) {
   if (scheduler) {
@@ -34,6 +63,9 @@ export async function startScheduler(settings: AppSettings) {
 }
 
 export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
+  // App info handlers
+  ipcMain.handle("app:version", async () => app.getVersion());
+  
   // Settings handlers
   ipcMain.handle("settings:get", async () => getSettings());
   
@@ -52,6 +84,19 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
       ...cfg,
       country 
     };
+    
+    // Handle auto-start setting
+    if (cfg.autoStart !== undefined) {
+      console.log("[Electron] Setting auto-start to:", cfg.autoStart);
+      app.setLoginItemSettings({
+        openAtLogin: cfg.autoStart,
+        path: process.execPath,
+      });
+      
+      // Verify the setting was applied
+      const loginSettings = app.getLoginItemSettings();
+      console.log("[Electron] Login item settings after update:", loginSettings);
+    }
     
     saveSettings(updated);
     await startScheduler(updated);
@@ -347,6 +392,10 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
     }
     
     const title = `اقترب وقت صلاة الظهر (${timeStr})`;
+    
+    // Play custom sound
+    playSound("pray-time-almost-there.mp3");
+    
     // On Windows, don't pass icon - it causes two icons to show
     // Windows automatically uses the app icon from AppUserModelId
     if (process.platform === "win32") {
@@ -361,14 +410,32 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
   ipcMain.handle("notification:testAdhan", async () => {
     const title = "حان الآن موعد صلاة الظهر";
     
+    // Play adhan sound
+    playSound("pray-time.mp3");
+    
     // On Windows, don't pass icon - it causes two icons to show
     if (process.platform === "win32") {
-      new Notification({ title, silent: false }).show();
+      new Notification({ title, silent: true }).show();
     } else {
       const iconPath = join(app.getAppPath(), "assets", process.platform === "darwin" ? "icon.icns" : "icon.png");
       const icon = nativeImage.createFromPath(iconPath);
-      new Notification({ title, silent: false, icon }).show();
+      new Notification({ title, silent: true, icon }).show();
     }
+  });
+
+  // Auto-update handlers
+  ipcMain.handle("update:check", async () => {
+    if (mainWindow) {
+      checkForUpdates(mainWindow, true);
+    }
+  });
+
+  ipcMain.handle("update:download", async () => {
+    downloadUpdate();
+  });
+
+  ipcMain.handle("update:install", async () => {
+    quitAndInstall();
   });
 }
 
