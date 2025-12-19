@@ -120,7 +120,7 @@
     },
     "linux": {
       "target": [
-        "tar.gz"
+        "AppImage"
       ],
       "icon": "assets/icon-256.png",
       "category": "Utility"
