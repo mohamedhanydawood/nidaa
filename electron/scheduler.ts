@@ -1,6 +1,6 @@
 import { Notification, nativeImage, app } from "electron";
 import { join } from "path";
-import { exec } from "child_process";
+import * as sound from "sound-play";
 import {
   type DaySchedule,
   type PrayerKey,
@@ -99,31 +99,18 @@ export class PrayerScheduler {
     this.timers.push(t);
   }
 
-  private playSound(soundFile: string) {
+  private async playSound(soundFile: string) {
     const isDev = process.env.NODE_ENV === "development";
     const soundPath = isDev
       ? join(process.cwd(), "assets", "audio", soundFile)
       : join(process.resourcesPath, "assets", "audio", soundFile);
     
-    // Use different commands based on platform
-    let command: string;
-    if (process.platform === "win32") {
-      // Windows: Use MediaPlayer from PresentationCore (supports MP3)
-      const escapedPath = soundPath.replace(/\\/g, '\\\\');
-      command = `powershell -c "Add-Type -AssemblyName presentationCore; $player = New-Object System.Windows.Media.MediaPlayer; $player.Open('${escapedPath}'); $player.Play(); Start-Sleep -Seconds 3"`;
-    } else if (process.platform === "darwin") {
-      // macOS: Use afplay
-      command = `afplay "${soundPath}"`;
-    } else {
-      // Linux: Use aplay or paplay
-      command = `paplay "${soundPath}" || aplay "${soundPath}"`;
+    try {
+      // sound-play works on all platforms without external dependencies
+      await sound.play(soundPath);
+    } catch (error) {
+      console.error("Error playing sound:", error);
     }
-    
-    exec(command, (error) => {
-      if (error) {
-        console.error("Error playing sound:", error);
-      }
-    });
   }
 
   private notifyPreAlert(key: PrayerKey, at: Date) {
