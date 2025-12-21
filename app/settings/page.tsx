@@ -404,7 +404,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {cfg.notificationsEnabled && (
-              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md">
                 <span>✓</span>
                 <span>الإشعارات مفعلة</span>
               </div>
@@ -446,7 +446,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {cfg.autoStart && (
-              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md">
                 <span>✓</span>
                 <span>سيعمل التطبيق مع Windows</span>
               </div>
