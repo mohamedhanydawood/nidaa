@@ -1,5 +1,5 @@
 "use client";
-
+import { Sunrise, Sun, SunMedium, Sunset, Moon } from "lucide-react";
 interface Props {
   prayers: {
     Fajr: string;
@@ -26,45 +26,35 @@ const prayerNames: { [key: string]: string } = {
   Isha: "العشاء",
 };
 
-const prayerIcons: { [key: string]: string } = {
-  Fajr: "🌅",
-  Dhuhr: "☀️",
-  Asr: "🌤️",
-  Maghrib: "🌆",
-  Isha: "🌙",
+const prayerIcons: { [key: string]: React.ReactNode } = {
+  Fajr: <Sunrise width={20} height={20} />,
+  Dhuhr: <Sun width={20} height={20} />,
+  Asr: <SunMedium width={20} height={20} />,
+  Maghrib: <Sunset width={20} height={20} />,
+  Isha: <Moon width={20} height={20} />,
 };
+
 
 export default function PrayerChecklist({ prayers, checked, onToggle }: Props) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-        صلوات اليوم
-      </h2>
-      <div className="space-y-3">
+    <div>
+      <h2 className="text-sm font-semibold text-muted mb-3">قائمة التحقق</h2>
+      <div className="space-y-2">
         {Object.keys(prayers).map((key) => (
           <div
             key={key}
-            className={`flex items-center justify-between p-4 rounded-xl transition-all ${
-              checked[key as keyof typeof checked]
-                ? "bg-green-50 border-2 border-green-400"
-                : "bg-gray-50 border-2 border-gray-200"
-            }`}
+            className="flex items-center justify-between p-3 bg-card-hover rounded-lg hover:bg-input transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{prayerIcons[key]}</span>
-              <div>
-                <p className="text-lg font-semibold text-gray-800">
-                  {prayerNames[key]}
-                </p>
-                <p className="text-sm text-gray-500">{prayers[key as keyof typeof prayers]}</p>
-              </div>
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className="text-lg md:text-xl">{prayerIcons[key]}</span>
+              <span className="font-medium text-sm md:text-base">{prayerNames[key]}</span>
             </div>
             <button
               onClick={() => onToggle(key)}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all ${
                 checked[key as keyof typeof checked]
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-400 hover:bg-gray-300"
+                  ? "bg-emerald-500 text-foreground"
+                  : "bg-muted hover:bg-zinc-500"
               }`}
             >
               {checked[key as keyof typeof checked] ? "✓" : ""}

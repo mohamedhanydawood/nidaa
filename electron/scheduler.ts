@@ -1,6 +1,6 @@
 import { Notification, nativeImage, app } from "electron";
 import { join } from "path";
-import * as sound from "sound-play";
+import { exec } from "child_process";
 import {
   type DaySchedule,
   type PrayerKey,
@@ -99,18 +99,31 @@ export class PrayerScheduler {
     this.timers.push(t);
   }
 
-  private async playSound(soundFile: string) {
+  private playSound(soundFile: string) {
     const isDev = process.env.NODE_ENV === "development";
     const soundPath = isDev
       ? join(process.cwd(), "assets", "audio", soundFile)
       : join(process.resourcesPath, "assets", "audio", soundFile);
     
-    try {
-      // sound-play works on all platforms without external dependencies
-      await sound.play(soundPath);
-    } catch (error) {
-      console.error("Error playing sound:", error);
+    let command: string;
+    
+    if (process.platform === "win32") {
+      // Windows: Use MediaPlayer directly (much faster than wmplayer.exe)
+      const escapedPath = soundPath.replace(/\\/g, '\\\\').replace(/'/g, "''");
+      command = `powershell -ExecutionPolicy Bypass -NoProfile -Command "Add-Type -AssemblyName PresentationCore; $player = New-Object System.Windows.Media.MediaPlayer; $player.Open([uri]'${escapedPath}'); $player.Play(); Start-Sleep -Milliseconds 100; while($player.NaturalDuration.HasTimeSpan -eq $false) { Start-Sleep -Milliseconds 50 }; $duration = $player.NaturalDuration.TimeSpan.TotalSeconds; Start-Sleep -Seconds $duration; $player.Stop(); $player.Close()"`;
+    } else if (process.platform === "darwin") {
+      // macOS: afplay is built-in and reliable
+      command = `afplay "${soundPath}"`;
+    } else {
+      // Linux: Try multiple players in order of preference
+      command = `(command -v ffplay >/dev/null 2>&1 && ffplay -nodisp -autoexit -loglevel quiet "${soundPath}") || (command -v mpg123 >/dev/null 2>&1 && mpg123 -q "${soundPath}") || (command -v mplayer >/dev/null 2>&1 && mplayer -really-quiet "${soundPath}") || (command -v cvlc >/dev/null 2>&1 && cvlc --play-and-exit "${soundPath}" 2>/dev/null)`;
     }
+    
+    exec(command, (error) => {
+      if (error) {
+        console.error("Error playing sound:", error.message);
+      }
+    });
   }
 
   private notifyPreAlert(key: PrayerKey, at: Date) {

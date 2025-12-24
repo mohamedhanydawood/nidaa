@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Toaster } from "sonner";
 import UpdateNotifier from "../components/UpdateNotifier";
 import "./globals.css";
+import Header from "../components/Header";
 
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   weight: ["300", "400", "500", "600", "700"],
@@ -38,6 +39,9 @@ export default function RootLayout({
         <Toaster position="top-center" dir="rtl" richColors />
         
         <UpdateNotifier>
+          {/* Global header/sidebar */}
+          <Header />
+
           {/* Content wrapper */}
           <div className="relative z-10">
             {children}

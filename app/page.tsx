@@ -1,8 +1,16 @@
 "use client";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import Header from "../components/Header";
+import { Calendar, MapPin } from "lucide-react";
+import UpdateBanner from "../components/UpdateBanner";
+import PrayerTimesGrid from "../components/PrayerTimesGrid";
+import PrayerChecklist from "../components/PrayerChecklist";
+import StatisticsCards from "../components/StatisticsCards";
 import WeeklyHeatmap from "../components/WeeklyHeatmap";
 import { useUpdateInfo } from "../components/UpdateNotifier";
+import AthkarSection from "@/components/AthkarSection";
+import RandomAyah from "../components/RandomAyah";
+import InfoCards from "../components/InfoCards";
 
 type Settings = {
   city: string;
@@ -59,7 +67,7 @@ export default function Home() {
   // تحويل من 24 ساعة إلى 12 ساعة
   const formatTime = (time24: string): string => {
     if (settings.timeFormat === "24") return time24;
-    
+
     const [hours, minutes] = time24.split(":").map(Number);
     const period = hours >= 12 ? "PM" : "AM";
     const hours12 = hours % 12 || 12;
@@ -79,14 +87,14 @@ export default function Home() {
         console.log("Using default settings");
       }
     };
-    
+
     fetchSettings();
-    
+
     // إعادة تحميل الإعدادات عند العودة للصفحة
     const handleFocus = () => {
       fetchSettings();
     };
-    
+
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
@@ -123,7 +131,7 @@ export default function Home() {
     };
 
     fetchData();
-    
+
     // إعادة جلب البيانات عند العودة للصفحة
     const handleFocus = () => {
       fetchData();
@@ -156,14 +164,14 @@ export default function Home() {
             [prayerName]: done,
           },
         }));
-        
+
         // Refresh statistics after marking prayer
         if (window.electron?.getStatistics) {
           window.electron.getStatistics().then(setStatistics);
         }
       });
     }
-    
+
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
@@ -197,202 +205,86 @@ export default function Home() {
     }
   };
 
-  const prayerNames: { [key: string]: string } = {
-    Fajr: "الفجر",
-    Dhuhr: "الظهر",
-    Asr: "العصر",
-    Maghrib: "المغرب",
-    Isha: "العشاء",
-  };
-
-  const prayerIcons: { [key: string]: string } = {
-    Fajr: "🌅",
-    Dhuhr: "☀️",
-    Asr: "🌤️",
-    Maghrib: "🌆",
-    Isha: "🌙",
-  };
-
   const updateInfo = useUpdateInfo();
 
   return (
-    <div dir="rtl" className="h-screen text-foreground flex flex-col">
+
+    <div dir="rtl" className="min-h-screen text-foreground flex flex-col overflow-hidden bg-background">
       {/* Header */}
-      <header className="bg-card px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2 md:gap-3">
-          {/* <span className="text-2xl">🕌</span> */}
-          <Image src="/icon.png" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
-          <div>
-            <h1 className="text-lg md:text-xl font-bold">نداء</h1>
-            <p className="text-xs text-muted">
-              {settings.city}, {settings.country}
-            </p>
-            {prayerData.hijri && (
-              <p className="text-xs text-muted">
-                {prayerData.hijri.day} {prayerData.hijri.month.ar} {prayerData.hijri.year} هـ
-              </p>
-            )}
-          </div>
-        </div>
-        <a
-          href={process.env.NODE_ENV === "development" ? "/settings" : "settings.html"}
-          className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
-        >
-          ⚙️ الإعدادات
-        </a>
-      </header>
+      <Header />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4">
-        {/* Update Banner */}
-        {updateInfo?.available && (
+      <main className="flex-1 overflow-y-auto p-2 md:p-4 md:mr-22">
+        {/* Grid Container */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+
+          {/* 1. Location & Hijri - جعلناه أصغر وبدون هوامش ضخمة */}
+          <div className="col-span-1 md:col-span-12 flex items-center justify-between px-1 mb-1">
+            {prayerData.hijri && (
+              <div className="flex items-center gap-2 opacity-80">
+                <Calendar size={16} className="text-muted-foreground" />
+                <p className="text-xs md:text-sm font-medium">
+                  {prayerData.hijri.day} {prayerData.hijri.month.ar} {prayerData.hijri.year} هـ
+                </p>
+              </div>
+            )}
+            <div className="flex items-center gap-2 opacity-80">
+              <p className="text-xs md:text-sm font-medium">{settings.city}, {settings.country}</p>
+              <MapPin size={16} className="text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* 2. Update Banner - يظهر فقط عند الحاجة ولا يأخذ مساحة فارغة */}
           <div className="col-span-1 md:col-span-12">
-            {updateInfo.downloaded ? (
-              <div className="bg-green-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg animate-pulse">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">✅</span>
-                  <div>
-                    <p className="font-semibold">تم تحميل التحديث {updateInfo.version}</p>
-                    <p className="text-sm opacity-90">جاري إعادة التشغيل...</p>
-                  </div>
-                </div>
-                <div className="animate-spin text-2xl">⚙️</div>
-              </div>
-            ) : updateInfo.downloading ? (
-              <div className="bg-blue-600 text-white rounded-lg p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="animate-spin text-2xl">⬇️</div>
-                    <div>
-                      <p className="font-semibold">جاري تحميل التحديث {updateInfo.version}</p>
-                      <p className="text-sm opacity-90">{updateInfo.downloadProgress}% مكتمل</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full bg-blue-800 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="bg-white h-full transition-all duration-300 ease-out"
-                    style={{ width: `${updateInfo.downloadProgress}%` }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="bg-yellow-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">⚠️</span>
-                  <div>
-                    <p className="font-semibold">تحديث جديد متاح</p>
-                    <p className="text-sm opacity-90">الإصدار {updateInfo.version} جاهز للتحميل</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => window.electron?.downloadUpdate()}
-                  className="px-4 py-2 bg-white text-yellow-600 rounded-md font-semibold hover:bg-gray-100 transition-colors"
-                >
-                  تحميل الآن
-                </button>
-              </div>
-            )}
+            <UpdateBanner updateInfo={updateInfo} />
           </div>
-        )}
 
-        {/* أوقات الصلوات */}
-        <div className="col-span-1 md:col-span-12 bg-card rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-muted mb-3">مواقيت اليوم</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 md:gap-3">
-            {Object.keys(prayerData.times).map((key) => {
-              const time24 = prayerData.times[key as keyof typeof prayerData.times];
-              
-              // Highlight the next prayer based on server data
-              const isNext = key === prayerData.nextPrayer.englishName;
-              
-              return (
-                <div
-                  key={key}
-                  className={`p-2 md:p-3 rounded-lg text-center transition-all ${
-                    isNext
-                      ? "bg-accent shadow-lg"
-                      : "bg-card-hover"
-                  }`}
-                >
-                  <div className="text-xl md:text-2xl mb-1">{prayerIcons[key]}</div>
-                  <div className="text-xs md:text-sm font-semibold mb-1">{prayerNames[key]}</div>
-                  <div className={`text-sm md:text-lg font-bold ${isNext ? "text-foreground" : "text-muted"}`}>
-                    {formatTime(time24)}
-                  </div>
-                </div>
-              );
-            })}
-            
-            {/* Sunrise Card */}
-            {prayerData.sunrise && (
-              <div className="p-2 md:p-3 rounded-lg text-center bg-card-hover">
-                <div className="text-xl md:text-2xl mb-1">🌅</div>
-                <div className="text-xs md:text-sm font-semibold mb-1">الشروق</div>
-                <div className="text-sm md:text-lg font-bold text-muted">
-                  {formatTime(prayerData.sunrise)}
-                </div>
-              </div>
-            )}
+          {/* 3. أوقات الصلوات - القسم العلوي العريض */}
+          <div className="col-span-1 md:col-span-12">
+            <PrayerTimesGrid
+              times={prayerData.times}
+              nextPrayer={prayerData.nextPrayer}
+              sunrise={prayerData.sunrise}
+              formatTime={formatTime}
+            />
           </div>
-        </div>
 
-        {/* قائمة الصلوات */}
-        <div className="col-span-1 md:col-span-5 bg-card rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-muted mb-3">قائمة التحقق</h2>
-          <div className="space-y-2">
-            {Object.keys(prayerData.times).map((key) => (
-              <div
-                key={key}
-                className="flex items-center justify-between p-3 bg-card-hover rounded-lg hover:bg-input transition-colors"
-              >
-                <div className="flex items-center gap-2 md:gap-3">
-                  <span className="text-lg md:text-xl">{prayerIcons[key]}</span>
-                  <span className="font-medium text-sm md:text-base">{prayerNames[key]}</span>
-                </div>
-                <button
-                  onClick={() => handleTogglePrayer(key)}
-                  className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all ${
-                    prayerData.checked[key as keyof typeof prayerData.checked]
-                      ? "bg-emerald-500 text-foreground"
-                      : "bg-muted hover:bg-zinc-500"
-                  }`}
-                >
-                  {prayerData.checked[key as keyof typeof prayerData.checked] ? "✓" : ""}
-                </button>
-              </div>
-            ))}
+          {/* 3.1 كروت منزلقة - تعرض بعد مواقيت الصلاة */}
+          <div className="col-span-1 md:col-span-12">
+            <InfoCards />
           </div>
-        </div>
 
-        {/* الإحصائيات */}
-        <div className="col-span-1 md:col-span-4 bg-card rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-muted mb-3">الإحصائيات</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
-              <div className="text-2xl md:text-3xl font-bold text-emerald-400">
-                {Object.values(prayerData.checked).filter(Boolean).length}/5
-              </div>
-              <div className="text-xs md:text-sm text-muted mt-1">صلوات اليوم</div>
+          {/* الصف السفلي: تقسيم العناصر بجانب بعضها لتقليل الفراغ الرأسي */}
+
+          {/* قائمة التحقق - أخذت 5 أعمدة */}
+          <div className="col-span-1 md:col-span-5 space-y-3">
+            <div className="bg-card rounded-xl p-3 ">
+              <StatisticsCards statistics={statistics} checked={prayerData.checked} />
             </div>
-            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
-              <div className="text-2xl md:text-3xl font-bold text-blue-400">
-                {statistics.currentStreak}
-              </div>
-              <div className="text-xs md:text-sm text-muted mt-1">أيام متواصلة</div>
-            </div>
-            <div className="bg-card-hover p-3 md:p-4 rounded-lg text-center">
-              <div className="text-2xl md:text-3xl font-bold text-purple-400">
-                {statistics.commitmentPercentage}%
-              </div>
-              <div className="text-xs md:text-sm text-muted mt-1">نسبة الالتزام</div>
+            <div className="bg-card rounded-xl p-3 ">
+              <PrayerChecklist
+                prayers={prayerData.times}
+                checked={prayerData.checked}
+                onToggle={handleTogglePrayer}
+              />
             </div>
           </div>
-        </div>
 
-        {/* مخطط الأسبوع */}
-        <div className="col-span-1 md:col-span-3">
-          <WeeklyHeatmap />
+          {/* الأذكار والإحصائيات - أخذت 4 أعمدة */}
+          <div className="col-span-1 md:col-span-4 flex flex-col gap-3">
+            <WeeklyHeatmap />
+          </div>
+
+          {/* سجل الأسبوع - أخذت 3 أعمدة */}
+          <div className="col-span-1 md:col-span-3 flex flex-col gap-3">
+            <div className="bg-card rounded-xl p-3 ">
+              <RandomAyah />
+            </div>
+            <div className="bg-card rounded-xl p-3 ">
+              <AthkarSection />
+            </div>
+          </div>
+
         </div>
       </main>
     </div>

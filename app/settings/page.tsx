@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { toast } from "sonner";
 
 type Settings = {
@@ -244,19 +243,7 @@ export default function SettingsPage() {
 
   return (
     <div dir="rtl" className="h-screen text-foreground flex flex-col">
-      {/* Header */}
-      <header className="bg-card px-4 md:px-6 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2 md:gap-3">
-          <Image src="/icon.png" alt="Nidaa Logo" width={40} height={40} className="md:w-[50px] md:h-[50px]" />
-          <h1 className="text-lg md:text-xl font-bold">نداء - الإعدادات</h1>
-        </div>
-        <a
-          href={process.env.NODE_ENV === "development" ? "/" : "index.html"}
-          className="px-3 py-1.5 text-sm rounded-md hover:bg-card-hover transition-colors"
-        >
-          ← رجوع
-        </a>
-      </header>
+      {/* Header moved to global layout */}
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">

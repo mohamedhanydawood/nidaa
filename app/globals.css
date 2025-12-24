@@ -87,35 +87,45 @@ body {
 }
 
 /* Custom Scrollbar Styles */
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
-}
+} */
 
-::-webkit-scrollbar-track {
+/* ::-webkit-scrollbar-track {
   background: var(--background);
   border-radius: 4px;
+} */
+/* Hide scrollbar utility */
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hidescrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-thumb {
+/* ::-webkit-scrollbar-thumb {
   background: var(--accent);
   border-radius: 4px;
   transition: background 0.2s ease;
-}
+} */
 
-::-webkit-scrollbar-thumb:hover {
+/* ::-webkit-scrollbar-thumb:hover {
   background: var(--border);
-}
+} */
 
-::-webkit-scrollbar-corner {
+/* ::-webkit-scrollbar-corner {
   background: var(--background);
-}
+} */
 
 /* Firefox scrollbar */
-* {
+/* * {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--background);
-}
+} */
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -159,3 +169,34 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.animate-collapsible-down {
+  animation: collapsible-down 0.3s ease-out;
+}
+
+.animate-collapsible-up {
+  animation: collapsible-up 0.3s ease-out;
+}
+
