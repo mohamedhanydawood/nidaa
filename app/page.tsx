@@ -11,6 +11,7 @@ import { useUpdateInfo } from "../components/UpdateNotifier";
 import AthkarSection from "@/components/AthkarSection";
 import RandomAyah from "../components/RandomAyah";
 import InfoCards from "../components/InfoCards";
+import { useLanguage } from "../lib/LanguageProvider";
 
 type Settings = {
   city: string;
@@ -31,8 +32,8 @@ export default function Home() {
     notifyBefore: 5,
     timeFormat: "24",
     notificationsEnabled: true,
-  });
-
+  });  const { language } = useLanguage();
+  const isRTL = language === "ar";
   const [prayerData, setPrayerData] = useState({
     times: {
       Fajr: "04:45",
@@ -209,12 +210,12 @@ export default function Home() {
 
   return (
 
-    <div dir="rtl" className="min-h-screen text-foreground flex flex-col overflow-hidden bg-background">
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen text-foreground flex flex-col overflow-hidden bg-background">
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-2 md:p-4 md:mr-22">
+      <main className={`flex-1 overflow-y-auto p-2 md:p-4 ${isRTL ? "md:mr-22" : "md:ml-22"}`}>
         {/* Grid Container */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
 

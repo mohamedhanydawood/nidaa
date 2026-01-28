@@ -6,6 +6,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useTranslation } from "../lib/useTranslation";
+import { useLanguage } from "../lib/LanguageProvider";
 
 const morningAthkar = [
   { id: 1, text: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", count: 1 },
@@ -32,17 +34,20 @@ const eveningAthkar = [
 export default function AthkarSection() {
   const [morningOpen, setMorningOpen] = useState(false);
   const [eveningOpen, setEveningOpen] = useState(false);
+  const { t } = useTranslation("athkar");
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
 
   return (
-    <div className="col-span-1 md:col-span-4 space-y-3">
+    <div className="col-span-1 md:col-span-4 space-y-3" dir={isRTL ? "rtl" : "ltr"}>
       {/* أذكار الصباح */}
       <Collapsible open={morningOpen} onOpenChange={setMorningOpen}>
         <CollapsibleTrigger className="w-full bg-linear-to-r from-amber-500/30 to-orange-500/15 hover:from-amber-500/20 hover:to-orange-500/20 rounded-lg p-4 transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <h3 className="text-base md:text-lg font-semibold text-foreground">أذكار الصباح</h3>
-                <p className="text-xs md:text-sm text-muted">من بعد الفجر حتى الظهر</p>
+          <div className={`flex items-center justify-between ${isRTL ? "flex-row" : ""}`}>
+            <div className={`flex items-center gap-3 ${isRTL ? "flex-row" : ""}`}>
+              <div className={isRTL ? "text-right" : "text-left"}>
+                <h3 className="text-base md:text-lg font-semibold text-foreground">{t("morningAthkar")}</h3>
+                <p className="text-xs md:text-sm text-muted">{t("morningTime")}</p>
               </div>
             </div>
             <svg
@@ -62,12 +67,12 @@ export default function AthkarSection() {
                 key={thikr.id}
                 className="bg-card-hover p-3 rounded-lg border border-border/50"
               >
-                <p className="text-sm md:text-base leading-relaxed text-foreground mb-2">
+                <p className={`text-sm md:text-base leading-relaxed text-foreground mb-2 ${isRTL ? "text-right" : "text-left"}`}>
                   {thikr.text}
                 </p>
-                <div className="flex justify-end">
+                <div className={`flex ${isRTL ? "justify-start" : "justify-end"}`}>
                   <span className="text-xs text-muted bg-muted/30 px-2 py-1 rounded-full">
-                    {thikr.count === 1 ? "مرة واحدة" : `${thikr.count} مرات`}
+                    {thikr.count === 1 ? t("once") : t("times", { count: thikr.count })}
                   </span>
                 </div>
               </div>
@@ -79,11 +84,11 @@ export default function AthkarSection() {
       {/* أذكار المساء */}
       <Collapsible open={eveningOpen} onOpenChange={setEveningOpen}>
         <CollapsibleTrigger className="w-full bg-linear-to-r from-indigo-500/30 to-purple-500/15 hover:from-indigo-500/20 hover:to-purple-500/20 rounded-lg p-4 transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <h3 className="text-base md:text-lg font-semibold text-foreground">أذكار المساء</h3>
-                <p className="text-xs md:text-sm text-muted">من بعد العصر حتى المغرب</p>
+          <div className={`flex items-center justify-between ${isRTL ? "flex-row" : ""}`}>
+            <div className={`flex items-center gap-3 ${isRTL ? "flex-row" : ""}`}>
+              <div className={isRTL ? "text-right" : "text-left"}>
+                <h3 className="text-base md:text-lg font-semibold text-foreground">{t("eveningAthkar")}</h3>
+                <p className="text-xs md:text-sm text-muted">{t("eveningTime")}</p>
               </div>
             </div>
             <svg
@@ -103,12 +108,12 @@ export default function AthkarSection() {
                 key={thikr.id}
                 className="bg-card-hover p-3 rounded-lg border border-border/50"
               >
-                <p className="text-sm md:text-base leading-relaxed text-foreground mb-2">
+                <p className={`text-sm md:text-base leading-relaxed text-foreground mb-2 ${isRTL ? "text-right" : "text-left"}`}>
                   {thikr.text}
                 </p>
-                <div className="flex justify-end">
+                <div className={`flex ${isRTL ? "justify-start" : "justify-end"}`}>
                   <span className="text-xs text-muted bg-muted/30 px-2 py-1 rounded-full">
-                    {thikr.count === 1 ? "مرة واحدة" : `${thikr.count} مرات`}
+                    {thikr.count === 1 ? t("once") : t("times", { count: thikr.count })}
                   </span>
                 </div>
               </div>

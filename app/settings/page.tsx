@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/useTranslation";
+import { LanguageContext } from "@/lib/LanguageProvider";
 
 type Settings = {
   city: string;
@@ -12,6 +14,7 @@ type Settings = {
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
   autoStart: boolean;
+  language: "ar" | "en";
 };
 
 const methods: Array<{ id: number; name: string }> = [
@@ -145,6 +148,12 @@ const countries: Array<{ code: string; name: string; cities: string[] }> = [
 ];
 
 export default function SettingsPage() {
+  const { t } = useTranslation("settings");
+  const { t: tCommon } = useTranslation("common");
+  const languageContext = useContext(LanguageContext);
+  const language = languageContext?.language || "ar";
+  const isRTL = language === "ar";
+
   const [cfg, setCfg] = useState<Settings>({
     city: "",
     country: "",
@@ -154,9 +163,13 @@ export default function SettingsPage() {
     timeFormat: "12",
     notificationsEnabled: true,
     autoStart: true,
+    language: "ar",
   });
   const [saving, setSaving] = useState(false);
   const [appVersion, setAppVersion] = useState<string>("");
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const isMounted = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -190,7 +203,8 @@ export default function SettingsPage() {
           
           setCfg({
             ...settings,
-            country: displayCountry
+            country: displayCountry,
+            language: settings.language || "ar"
           });
         }
         
@@ -201,15 +215,23 @@ export default function SettingsPage() {
         }
       } catch {
         console.log("Using defaults");
+      } finally {
+        // Mark as mounted after initial load
+        setTimeout(() => {
+          isMounted.current = true;
+        }, 100);
       }
     };
     fetchSettings();
   }, []);
 
-  async function save() {
+  // Save function with useCallback to memoize it
+  const save = useCallback(async () => {
     // Validate required fields
     if (!cfg.country || !cfg.city) {
-      toast.error("الرجاء اختيار الدولة والمدينة");
+      toast.error(t("messages.saveError"), {
+        description: tCommon("selectLocation"),
+      });
       return;
     }
     
@@ -222,27 +244,102 @@ export default function SettingsPage() {
         
         // Success message with notification status
         const notificationStatus = cfg.notificationsEnabled 
-          ? "✓ الإشعارات مفعلة" 
-          : "الإشعارات معطلة";
+          ? `✓ ${t("appSettings.notifications")}` 
+          : `${t("appSettings.notifications")} ${tCommon("disabled")}`;
         
-        toast.success("تم حفظ الإعدادات بنجاح", {
-          description: `سيتم تطبيق التغييرات فوراً • ${notificationStatus}`,
+        toast.success(t("messages.saveSuccess"), {
+          description: `${notificationStatus}`,
           duration: 3000,
         });
       } else {
         console.error("window.electron.updateSettings is not available");
-        toast.error("خطأ: التطبيق يعمل في وضع الويب");
+        toast.error(t("messages.saveError"), {
+          description: tCommon("webMode"),
+        });
       }
     } catch (error) {
       console.error("Error saving settings:", error);
-      toast.error("حدث خطأ أثناء الحفظ");
+      toast.error(t("messages.saveError"));
     } finally {
       setSaving(false);
     }
-  }
+  }, [cfg, t, tCommon]);
+
+  // Auto-save effect with debouncing
+  useEffect(() => {
+    // Skip saving on initial mount and if required fields are missing
+    if (!isMounted.current || !cfg.country || !cfg.city) {
+      return;
+    }
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save (500ms debounce)
+    saveTimeoutRef.current = setTimeout(() => {
+      save();
+    }, 500);
+
+    // Cleanup on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cfg]); // Only re-run when cfg changes (save is intentionally not a dependency to avoid infinite loop)
+
+  const handleCheckForUpdates = async () => {
+    if (!window.electron?.checkForUpdates) {
+      toast.error(tCommon("webMode"));
+      return;
+    }
+
+    setCheckingUpdate(true);
+    toast.info(t("updateCheck.checking"));
+
+    try {
+      // Set up one-time listeners for update check result
+      const updateAvailablePromise = new Promise<boolean>((resolve) => {
+        const availableHandler = () => {
+          resolve(true);
+        };
+        const notAvailableHandler = () => {
+          resolve(false);
+        };
+        
+        window.electron?.onUpdateAvailable(availableHandler);
+        window.electron?.onUpdateNotAvailable(notAvailableHandler);
+        
+        // Timeout after 30 seconds
+        setTimeout(() => resolve(false), 30000);
+      });
+
+      // Trigger update check
+      await window.electron.checkForUpdates();
+
+      // Wait for result
+      const updateAvailable = await updateAvailablePromise;
+
+      if (updateAvailable) {
+        toast.success(t("updateCheck.available"));
+      } else {
+        toast.success(t("updateCheck.upToDate"), {
+          description: `${tCommon("version")} ${appVersion}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking for updates:", error);
+      toast.error(t("updateCheck.error"));
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
 
   return (
-    <div dir="rtl" className="h-screen text-foreground flex flex-col">
+    <div dir={isRTL ? "rtl" : "ltr"} className="h-screen text-foreground flex flex-col">
       {/* Header moved to global layout */}
 
       {/* Content */}
@@ -250,7 +347,7 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Country */}
           <div className="bg-card p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-muted mb-2">الدولة</label>
+            <label className="block text-sm font-semibold text-muted mb-2">{t("location.country")}</label>
             <select
               className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.country}
@@ -261,7 +358,7 @@ export default function SettingsPage() {
               }}
             >
               <option value="" disabled className="bg-card text-muted">
-                اختر دولة
+                {t("location.selectCountry")}
               </option>
               {countries.map((c) => (
                 <option key={c.code} value={c.name} className="bg-card text-foreground">
@@ -273,7 +370,7 @@ export default function SettingsPage() {
 
           {/* City */}
           <div className="bg-card p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-muted mb-2">المدينة</label>
+            <label className="block text-sm font-semibold text-muted mb-2">{t("location.city")}</label>
             <select
               className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none mb-2 [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.city}
@@ -283,7 +380,7 @@ export default function SettingsPage() {
               }}
             >
               <option value="" disabled className="bg-card text-muted">
-                اختر مدينة
+                {t("location.selectCity")}
               </option>
               {(countries.find((c) => c.name === cfg.country)?.cities || []).map((city) => (
                 <option key={city} value={city} className="bg-card text-foreground">
@@ -295,14 +392,14 @@ export default function SettingsPage() {
 
           {/* Method */}
           <div className="bg-card p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-muted mb-2">طريقة الحساب</label>
+            <label className="block text-sm font-semibold text-muted mb-2">{t("prayerSettings.calculationMethod")}</label>
             <select
               className="w-full p-2 bg-card-hover/20 border border-border rounded-md text-foreground focus:ring-2 focus:ring-accent focus:outline-none [&>option]:bg-card [&>option]:text-foreground"
               value={cfg.method}
               onChange={(e) => setCfg({ ...cfg, method: Number(e.target.value) })}
             >
               <option value="" disabled className="bg-card text-muted">
-                اختر طريقة حساب
+                {t("prayerSettings.calculationMethod")}
               </option>
               {methods.map((m) => (
                 <option key={m.id} value={m.id} className="bg-card text-foreground">
@@ -315,7 +412,7 @@ export default function SettingsPage() {
           {/* Notify Before */}
           <div className="bg-card p-4 rounded-lg">
             <label className="block text-sm font-semibold text-muted mb-2">
-              التنبيه قبل الأذان (بالدقائق)
+              {t("prayerSettings.notifyBefore")}
             </label>
             <input
               type="number"
@@ -329,8 +426,8 @@ export default function SettingsPage() {
 
           {/* Time Format */}
           <div className="bg-card p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-muted mb-2">صيغة الوقت</label>
-            <div className="flex gap-4">
+            <label className="block text-sm font-semibold text-muted mb-2">{t("prayerSettings.timeFormat")}</label>
+            <div className={`flex gap-4 ${isRTL ? "flex-row" : ""}`}>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -340,7 +437,7 @@ export default function SettingsPage() {
                   onChange={(e) => setCfg({ ...cfg, timeFormat: e.target.value as "24" })}
                   className="w-4 h-4"
                 />
-                <span>24 ساعة</span>
+                <span>{t("prayerSettings.hour24")}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -351,30 +448,30 @@ export default function SettingsPage() {
                   onChange={(e) => setCfg({ ...cfg, timeFormat: e.target.value as "12" })}
                   className="w-4 h-4"
                 />
-                <span>12 ساعة</span>
+                <span>{t("prayerSettings.hour12")}</span>
               </label>
             </div>
           </div>
 
           {/* Notifications Toggle */}
           <div className="bg-card p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-between mb-2 ${isRTL ? "flex-row" : ""}`}>
               <div>
-                <label className="block text-sm font-semibold text-muted mb-1">تفعيل الإشعارات</label>
-                <p className="text-xs text-muted">إشعارات مواقيت الصلاة والتذكيرات</p>
+                <label className="block text-sm font-semibold text-muted mb-1">{t("appSettings.notifications")}</label>
+                <p className="text-xs text-muted">{tCommon("prayerNotifications")}</p>
               </div>
               <button
                 onClick={() => {
                   const newValue = !cfg.notificationsEnabled;
                   setCfg({ ...cfg, notificationsEnabled: newValue });
                   if (newValue) {
-                    toast.success("✓ الإشعارات مفعلة", {
-                      description: "ستتلقى إشعارات مواقيت الصلاة",
+                    toast.success(`✓ ${t("appSettings.notifications")}`, {
+                      description: tCommon("notificationsEnabled"),
                       duration: 2500,
                     });
                   } else {
-                    toast.info("الإشعارات معطلة", {
-                      description: "لن تتلقى إشعارات مواقيت الصلاة",
+                    toast.info(t("appSettings.notifications"), {
+                      description: tCommon("notificationsDisabled"),
                       duration: 2500,
                     });
                   }
@@ -385,38 +482,38 @@ export default function SettingsPage() {
               >
                 <div
                   className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
-                    cfg.notificationsEnabled ? "right-0.5" : "right-7"
+                    cfg.notificationsEnabled ? (isRTL ? "left-0.5" : "right-0.5") : (isRTL ? "left-7" : "right-7")
                   }`}
                 />
               </button>
             </div>
             {cfg.notificationsEnabled && (
-              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md">
+              <div className={`flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md ${isRTL ? "flex-row" : ""}`}>
                 <span>✓</span>
-                <span>الإشعارات مفعلة</span>
+                <span>{t("appSettings.notifications")}</span>
               </div>
             )}
           </div>
 
           {/* Auto-start Toggle */}
           <div className="bg-card p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-between mb-2 ${isRTL ? "flex-row" : ""}`}>
               <div>
-                <label className="block text-sm font-semibold text-muted mb-1">التشغيل التلقائي</label>
-                <p className="text-xs text-muted">تشغيل التطبيق عند بدء Windows</p>
+                <label className="block text-sm font-semibold text-muted mb-1">{t("appSettings.autoStart")}</label>
+                <p className="text-xs text-muted">{tCommon("autoStartDescription")}</p>
               </div>
               <button
                 onClick={() => {
                   const newValue = !cfg.autoStart;
                   setCfg({ ...cfg, autoStart: newValue });
                   if (newValue) {
-                    toast.success("✓ التشغيل التلقائي مفعل", {
-                      description: "سيعمل التطبيق تلقائياً مع Windows",
+                    toast.success(`✓ ${t("appSettings.autoStart")}`, {
+                      description: tCommon("autoStartEnabled"),
                       duration: 2500,
                     });
                   } else {
-                    toast.info("التشغيل التلقائي معطل", {
-                      description: "يجب تشغيل التطبيق يدوياً",
+                    toast.info(t("appSettings.autoStart"), {
+                      description: tCommon("autoStartDisabled"),
                       duration: 2500,
                     });
                   }
@@ -427,98 +524,147 @@ export default function SettingsPage() {
               >
                 <div
                   className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
-                    cfg.autoStart ? "right-0.5" : "right-7"
+                    cfg.autoStart ? (isRTL ? "left-0.5" : "right-0.5") : (isRTL ? "left-7" : "right-7")
                   }`}
                 />
               </button>
             </div>
             {cfg.autoStart && (
-              <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md">
+              <div className={`flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-900/20 px-3 py-2 rounded-md ${isRTL ? "flex-row" : ""}`}>
                 <span>✓</span>
-                <span>سيعمل التطبيق مع Windows</span>
+                <span>{tCommon("autoStartEnabled")}</span>
               </div>
             )}
           </div>
 
-          {/* Test Notifications */}
+          {/* Language Selector */}
           <div className="bg-card p-4 rounded-lg">
-            <label className="block text-sm font-semibold text-muted mb-3">تجربة الإشعارات</label>
-            {!cfg.notificationsEnabled && (
-              <div className="mb-3 text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-md">
-                ⚠️ الإشعارات معطلة حالياً. فعّل الإشعارات لتجربتها.
-              </div>
-            )}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <label className="block text-sm font-semibold text-muted mb-3">{t("appSettings.language")}</label>
+            <div className={`grid grid-cols-2 gap-3 ${isRTL ? "flex flex-row" : ""}`}>
               <button
-                onClick={async () => {
-                  if (!cfg.notificationsEnabled) {
-                    toast.warning("الرجاء تفعيل الإشعارات أولاً");
-                    return;
-                  }
-                  if (window.electron?.testPreAlertNotification) {
-                    await window.electron.testPreAlertNotification();
-                    toast.info("تم إرسال تجربة تنبيه قبل الأذان");
-                  } else {
-                    toast.error("التطبيق يعمل في وضع الويب");
-                  }
+                onClick={() => {
+                  setCfg({ ...cfg, language: "ar" });
+                  toast.success(`✓ ${t("appSettings.arabic")}`);
                 }}
-                disabled={!cfg.notificationsEnabled}
-                className={`px-4 py-2 rounded-md transition-colors text-sm ${
-                  cfg.notificationsEnabled 
-                    ? "bg-card-hover hover:bg-input cursor-pointer" 
-                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  cfg.language === "ar"
+                    ? "bg-amber-500 text-white"
+                    : "bg-card-hover hover:bg-white/5"
                 }`}
               >
-                🔔 تجربة تنبيه قبل الأذان
+                {t("appSettings.arabic")}
               </button>
               <button
-                onClick={async () => {
-                  if (!cfg.notificationsEnabled) {
-                    toast.warning("الرجاء تفعيل الإشعارات أولاً");
-                    return;
-                  }
-                  if (window.electron?.testAdhanNotification) {
-                    await window.electron.testAdhanNotification();
-                    toast.info("تم إرسال تجربة إشعار الأذان");
-                  } else {
-                    toast.error("التطبيق يعمل في وضع الويب");
-                  }
+                onClick={() => {
+                  setCfg({ ...cfg, language: "en" });
+                  toast.success(`✓ ${t("appSettings.english")}`);
                 }}
-                disabled={!cfg.notificationsEnabled}
-                className={`px-4 py-2 rounded-md transition-colors text-sm ${
-                  cfg.notificationsEnabled 
-                    ? "bg-card-hover hover:bg-input cursor-pointer" 
-                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  cfg.language === "en"
+                    ? "bg-amber-500 text-white"
+                    : "bg-card-hover hover:bg-white/5"
                 }`}
               >
-                📢 تجربة إشعار الأذان
+                {t("appSettings.english")}
               </button>
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={save}
-              disabled={saving}
-              className="px-6 py-2 bg-accent hover:bg-accent rounded-md font-semibold disabled:bg-input transition-colors"
-            >
-              {saving ? "جاري الحفظ..." : "حفظ"}
-            </button>
-            <a
-              href="index.html"
-              className="px-6 py-2 bg-card-hover hover:bg-input rounded-md transition-colors text-center"
-            >
-              إلغاء
-            </a>
+          {/* Test Notifications */}
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-3">{t("testNotifications.title")}</label>
+            {!cfg.notificationsEnabled && (
+              <div className="mb-3 text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-md">
+                ⚠️ {tCommon("notificationsDisabled")}
+              </div>
+            )}
+            <div className={`flex flex-col sm:flex-row gap-3 ${isRTL ? "sm:flex-row" : ""}`}>
+              <button
+                onClick={async () => {
+                  if (!cfg.notificationsEnabled) {
+                    toast.warning(tCommon("enableNotificationsFirst"));
+                    return;
+                  }
+                  if (window.electron?.testPreAlertNotification) {
+                    await window.electron.testPreAlertNotification();
+                    toast.info(t("testNotifications.preAlert"));
+                  } else {
+                    toast.error(tCommon("webMode"));
+                  }
+                }}
+                disabled={!cfg.notificationsEnabled}
+                className={`px-4 py-2 rounded-md transition-colors text-sm ${
+                  cfg.notificationsEnabled 
+                    ? "bg-card-hover hover:bg-input cursor-pointer" 
+                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                }`}
+              >
+                🔔 {t("testNotifications.preAlert")}
+              </button>
+              <button
+                onClick={async () => {
+                  if (!cfg.notificationsEnabled) {
+                    toast.warning(tCommon("enableNotificationsFirst"));
+                    return;
+                  }
+                  if (window.electron?.testAdhanNotification) {
+                    await window.electron.testAdhanNotification();
+                    toast.info(t("testNotifications.adhan"));
+                  } else {
+                    toast.error(tCommon("webMode"));
+                  }
+                }}
+                disabled={!cfg.notificationsEnabled}
+                className={`px-4 py-2 rounded-md transition-colors text-sm ${
+                  cfg.notificationsEnabled 
+                    ? "bg-card-hover hover:bg-input cursor-pointer" 
+                    : "bg-muted/50 cursor-not-allowed opacity-60"
+                }`}
+              >
+                📢 {t("testNotifications.adhan")}
+              </button>
+            </div>
           </div>
 
-          {/* Version Info */}
-          <div className="bg-card p-4 rounded-lg text-center ">
-            <p className="text-xs text-muted mb-1">نداء - تطبيق مواقيت الصلاة</p>
-            <p className="text-sm font-semibold text-foreground">
-              الإصدار {appVersion || "1.0.0"}
-            </p>
+          {/* Auto-save indicator - subtle */}
+          {saving && (
+            <div className="bg-card p-3 rounded-lg text-center">
+              <p className="text-xs text-muted">{tCommon("saving")}</p>
+            </div>
+          )}
+
+          {/* Version Info & Updates */}
+          <div className="bg-card p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-muted mb-3">{t("updateCheck.title")}</label>
+            <div className="text-center mb-3">
+              <p className="text-xs text-muted mb-1">{tCommon("appDescription")}</p>
+              <p className="text-sm font-semibold text-foreground">
+                {tCommon("version")} {appVersion || "1.0.0"}
+              </p>
+            </div>
+            <button
+              onClick={handleCheckForUpdates}
+              disabled={checkingUpdate}
+              className={`w-full px-4 py-2 rounded-md transition-all text-sm font-medium ${
+                checkingUpdate
+                  ? "bg-muted/50 cursor-not-allowed opacity-60"
+                  : "bg-accent hover:bg-accent/90 cursor-pointer"
+              }`}
+            >
+              {checkingUpdate ? (
+                <span className={`flex items-center justify-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {t("updateCheck.checking")}
+                </span>
+              ) : (
+                <span className={`flex items-center justify-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                  🔄 {t("updateCheck.button")}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </main>

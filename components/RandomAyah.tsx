@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { BookOpen, RefreshCw } from "lucide-react";
+import { useLanguage } from "../lib/LanguageProvider";
+import { useTranslation } from "../lib/useTranslation";
 
 type Ayah = { reference: string; arabic?: string; translation?: string };
 
@@ -28,6 +30,10 @@ export default function RandomAyah(): React.JSX.Element {
   const [ayah, setAyah] = useState<Ayah | null>(null);
   const [loading, setLoading] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
+  const { t } = useTranslation("athkar");
+  const { t: tCommon } = useTranslation("common");
 
   const loadRandom = async () => {
     setLoading(true);
@@ -56,26 +62,26 @@ export default function RandomAyah(): React.JSX.Element {
   }, []);
 
   return (
-    <div className="bg-card rounded-xl p-3">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">آية</h3>
+    <div className="bg-card rounded-xl p-3" dir={isRTL ? "rtl" : "ltr"}>
+      <div className={`flex items-center justify-between ${isRTL ? "flex-row" : ""} mb-2`}>
+        <div className={`flex items-center gap-2 ${isRTL ? "flex-row" : ""}`}>
+          <h3 className="text-sm font-semibold">{t("randomAyah")}</h3>
           <BookOpen className="text-muted-foreground" />
         </div>
-        <button onClick={() => loadRandom()} className="p-1 rounded-md bg-neutral-800 hover:bg-zinc-600 text-sm flex items-center gap-1">
-          <span>تحديث</span>
+        <button onClick={() => loadRandom()} className={`p-1 rounded-md bg-neutral-800 hover:bg-zinc-600 text-sm flex items-center gap-1 ${isRTL ? "flex-row" : ""}`}>
+          <span>{tCommon("refresh")}</span>
           <RefreshCw size={16} />
         </button>
       </div>
 
       {loading && !ayah ? (
-        <p className="text-xs text-muted">جارٍ التحميل…</p>
+        <p className={`text-xs text-muted ${isRTL ? "text-right" : "text-left"}`}>{tCommon("loading")}</p>
       ) : ayah ? (
         <div className="space-y-2">
-          <p className="text-right text-base leading-relaxed font-semibold text-foreground">{ayah.arabic}</p>
+          <p className={`text-base leading-relaxed font-semibold text-foreground ${isRTL ? "text-right" : "text-left"}`}>{ayah.arabic}</p>
         </div>
       ) : (
-        <p className="text-xs text-muted">لا توجد آية للعرض حالياً.</p>
+        <p className={`text-xs text-muted ${isRTL ? "text-right" : "text-left"}`}>{t("noAyah")}</p>
       )}
     </div>
   );

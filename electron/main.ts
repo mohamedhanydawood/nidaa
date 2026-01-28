@@ -86,18 +86,22 @@ app.whenReady().then(async () => {
   const settings = getSettings();
   const isFirstTime = !settings.guideCompleted;
   
+  // Check if app was launched with --hidden flag (from Windows startup)
+  const shouldStartHidden = process.argv.includes('--hidden');
+  
   // Log auto-start status on app launch (for debugging)
   console.log("=== App Launch Info ===");
   console.log("Auto-start enabled:", settings.autoStart);
   console.log("Login item settings:", app.getLoginItemSettings());
   console.log("First time user:", isFirstTime);
+  console.log("Should start hidden:", shouldStartHidden);
   console.log("======================");
   
   const startUrl = isDev
     ? (isFirstTime ? "http://localhost:3000/guide" : "http://localhost:3000")
     : (isFirstTime ? "app://guide.html" : "app://index.html");
 
-  const mainWindow = createWindow(preloadPath, startUrl);
+  const mainWindow = createWindow(preloadPath, startUrl, shouldStartHidden);
   createTray();
   
   // Initialize auto-updater
@@ -105,6 +109,13 @@ app.whenReady().then(async () => {
   
   // Register all IPC handlers
   await registerIpcHandlers(mainWindow);
+  
+  // Initialize prayer scheduler on startup (CRITICAL for notifications)
+  const { startScheduler } = await import("./ipcHandlers.js");
+  if (settings && settings.city && settings.country) {
+    await startScheduler(settings);
+    console.log("[Electron] Prayer scheduler initialized on app startup");
+  }
 });
 
 app.on("window-all-closed", () => {

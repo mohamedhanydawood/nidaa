@@ -1,12 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { Home, Heart, Settings } from "lucide-react"; // استخدم الأيقونات اللازمة فقط
+import { Home, Settings } from "lucide-react"; 
 import { usePathname } from "next/navigation";
+import { useTranslation } from "../lib/useTranslation";
+import { useLanguage } from "../lib/LanguageProvider";
 
 export default function Header() {
+    const { t } = useTranslation("common");
+    const { language } = useLanguage();
+    const isRTL = language === "ar";
         return (
-            <nav className="md:flex w-18 h-screen bg-card border-l border-border/10 flex flex-col items-center py-8 fixed right-0 top-0 z-50">
+            <nav className={`md:flex w-18 h-screen bg-card border-b border-border/10 flex flex-col items-center py-8 fixed ${isRTL ? "right-0" : "left-0"} top-0 z-50`}>
             {/* الجزء العلوي: اللوجو والاسم */}
             <div className="flex flex-col items-center gap-4 flex-1">
                 <div className="relative group">
@@ -19,15 +24,6 @@ export default function Header() {
                         className="relative"
                     />
                 </div>
-                <div className="text-center">
-                    {/* <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-b from-white to-gray-400">
-                        نداء
-                    </h1>
-                    <p className="text-[10px] text-muted-foreground tracking-widest uppercase mt-1">
-                        NIDAA APP
-                    </p> */}
-                </div>
-
                 {/* خط فاصل أنيق */}
                 <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent my-4" />
 
@@ -42,8 +38,8 @@ export default function Header() {
             <div className="flex flex-col gap-4 items-center">
                 <a
                     href={process.env.NODE_ENV === "development" ? "/settings" : "settings.html"}
-                    title="الإعدادات"
-                    aria-label="الإعدادات"
+                    title={t("settings")}
+                    aria-label={t("settings")}
                     className="flex items-center justify-center w-12 h-12 rounded-xl bg-card-hover hover:bg-white/5 transition-all duration-300"
                 >
                     <Settings size={18} className="transition-transform group-hover:rotate-90" />
@@ -53,12 +49,13 @@ export default function Header() {
     );
 }
 
-    // مكون فرعي للأزرار لسهولة التعديل
+// مكون فرعي للأزرار لسهولة التعديل
 function NavItem({ icon, label, href, active = false }: { icon: React.ReactNode; label: string; href?: string; active?: boolean }) {
+    const { t } = useTranslation("common");
     const handleClick = () => {
         if (!href) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            try { (window as any).toast?.("ستتوفر قريبا"); } catch {}
+            try { (window as any).toast?.(t("comingSoon")); } catch {}
             return;
         }
         window.location.href = href;
@@ -82,10 +79,11 @@ function NavItem({ icon, label, href, active = false }: { icon: React.ReactNode;
 // wrapper to use the pathname hook inside the header's nav
 function NavItemsWrapper() {
     const pathname = usePathname();
+    const { t } = useTranslation("common");
 
     return (
         <>
-            <NavItem icon={<Home size={20} />} label="الرئيسية" href="/" active={pathname === "/"} />
+            <NavItem icon={<Home size={20} />} label={t("home")} href="/" active={pathname === "/"} />
             {/* <NavItem icon={<BookOpen size={20} />} label="المصحف" href="/quran" active={pathname === "/quran"} /> */}
             {/* <NavItem icon={<Heart size={20} />} label="الأذكار" href="/athkar" active={pathname === "/athkar"} /> */}
             {/* <NavItem icon={<Compass size={20} />} label="القبلة" href="/qibla" active={pathname === "/qibla"} /> */}

@@ -1,0 +1,42 @@
+{
+  "fajr": "الفجر",
+  "fajrEn": "Fajr",
+  "dhuhr": "الظهر",
+  "dhuhrEn": "Dhuhr",
+  "asr": "العصر",
+  "asrEn": "Asr",
+  "maghrib": "المغرب",
+  "maghribEn": "Maghrib",
+  "isha": "العشاء",
+  "ishaEn": "Isha",
+  "sunrise": "الشروق",
+  "sunriseEn": "Sunrise",
+  "nextPrayer": "الصلاة القادمة",
+  "remaining": "باقي",
+  "hour": "ساعة",
+  "minute": "دقيقة",
+  "hours": "ساعات",
+  "minutes": "دقائق",
+  "now": "حان الآن",
+  "todayPrayers": "صلوات اليوم",
+  "checklist": "قائمة التحقق",
+  "weekRecord": "سجل الأسبوع",
+  "marked": "موضح",
+  "notMarked": "غير موضح",
+  "abbreviations": {
+    "fajr": "ف",
+    "dhuhr": "ظ",
+    "asr": "ع",
+    "maghrib": "م",
+    "isha": "ش"
+  },
+  "days": {
+    "sunday": "الأحد",
+    "monday": "الإثنين",
+    "tuesday": "الثلاثاء",
+    "wednesday": "الأربعاء",
+    "thursday": "الخميس",
+    "friday": "الجمعة",
+    "saturday": "السبت"
+  }
+}

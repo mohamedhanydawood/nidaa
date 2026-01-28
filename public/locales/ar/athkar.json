@@ -1,0 +1,20 @@
+{
+  "ayah": "ayah",
+  "randomAyah": "آية ",
+  "noAyah": "لا توجد آية للعرض حالياً.",
+  "morningAthkar": "أذكار الصباح",
+  "morningTime": "من بعد الفجر حتى الظهر",
+  "eveningAthkar": "أذكار المساء",
+  "eveningTime": "من بعد العصر حتى المغرب",
+  "once": "مرة واحدة",
+  "times": "{{count}} مرات",
+  "days": {
+    "sunday": "الأحد",
+    "monday": "الإثنين",
+    "tuesday": "الثلاثاء",
+    "wednesday": "الأربعاء",
+    "thursday": "الخميس",
+    "friday": "الجمعة",
+    "saturday": "السبت"
+  }
+}

@@ -7,6 +7,7 @@ export type AppSettings = {
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
   autoStart: boolean;
+  language: "ar" | "en";
   guideCompleted?: boolean;
 };
 
@@ -19,6 +20,7 @@ export const defaultSettings: AppSettings = {
   timeFormat: "12",
   notificationsEnabled: true,
   autoStart: true,
+  language: "ar",
   guideCompleted: false,
 };
 
@@ -33,6 +35,8 @@ export const ARABIC_PRAYER_NAMES: Record<string, string> = {
 };
 
 export const ARABIC_DAY_NAMES = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+export const ENGLISH_DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export const COUNTRY_MAPPINGS: Record<string, string> = {
   "مصر": "Egypt",

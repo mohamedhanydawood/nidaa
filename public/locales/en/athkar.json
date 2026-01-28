@@ -1,0 +1,20 @@
+
+{  "ayah": "Ayah",
+  "randomAyah": " Ayah",
+  "noAyah": "No ayah to display currently.",
+  "morningAthkar": "Morning Athkar",
+  "morningTime": "From after Fajr until Dhuhr",
+  "eveningAthkar": "Evening Athkar",
+  "eveningTime": "From after Asr until Maghrib",
+  "once": "Once",
+  "times": "{{count}} times",
+  "days": {
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  }
+}

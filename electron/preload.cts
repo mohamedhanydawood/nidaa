@@ -3,6 +3,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electron", {
+  // Translations
+  getTranslations: (language: string, namespace: string) =>
+    ipcRenderer.invoke("translations:get", language, namespace),
+  
   // App info
   getAppVersion: () => ipcRenderer.invoke("app:version"),
   

@@ -1,0 +1,4 @@
+{
+  "preAlert": "حان موعد {{prayer}} بعد {{minutes}} دقيقة",
+  "adhan": "حان الآن موعد صلاة {{prayer}}"
+}

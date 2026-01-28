@@ -1,7 +1,8 @@
 import { ipcMain, BrowserWindow, Notification, nativeImage, app } from "electron";
 import { join } from "path";
 import { exec } from "child_process";
-import { AppSettings, ARABIC_PRAYER_NAMES, ARABIC_DAY_NAMES } from "./types.js";
+import { readFile } from "fs/promises";
+import { AppSettings, ARABIC_PRAYER_NAMES, ENGLISH_DAY_NAMES } from "./types.js";
 import { getSettings, saveSettings, getRecords, saveRecords } from "./store.js";
 import { validateSettings, validatePrayerName, normalizeCountryName } from "./validators.js";
 import { fetchTodayScheduleByCity } from "./prayerService.js";
@@ -63,6 +64,25 @@ export async function startScheduler(settings: AppSettings) {
 }
 
 export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
+  // Translation loader
+  ipcMain.handle("translations:get", async (_e, language: string, namespace: string) => {
+    try {
+      const isDev = !app.isPackaged;
+      const basePath = isDev
+        ? join(process.cwd(), "public", "locales")
+        : join(app.getAppPath(), "out", "locales");
+      
+      const filePath = join(basePath, language, `${namespace}.json`);
+      console.log(`[IPC] Loading translation from: ${filePath}`);
+      
+      const content = await readFile(filePath, "utf-8");
+      return JSON.parse(content);
+    } catch (error) {
+      console.error(`[IPC] Failed to load translation ${language}/${namespace}:`, error);
+      throw error;
+    }
+  });
+
   // App info handlers
   ipcMain.handle("app:version", async () => app.getVersion());
   
@@ -91,6 +111,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
       app.setLoginItemSettings({
         openAtLogin: cfg.autoStart,
         path: process.execPath,
+        args: ['--hidden'], // Start hidden in background on Windows startup
       });
       
       // Verify the setting was applied
@@ -352,7 +373,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
       date.setDate(date.getDate() - i);
       const dateKey = date.toISOString().slice(0, 10);
       
-      const dayName = ARABIC_DAY_NAMES[date.getDay()];
+      const dayName = ENGLISH_DAY_NAMES[date.getDay()];
       
       const prayers = records[dateKey] || {
         Fajr: false,

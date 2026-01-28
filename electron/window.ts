@@ -69,7 +69,7 @@ export function createTray() {
   });
 }
 
-export function createWindow(preloadPath: string, startUrl: string): BrowserWindow {
+export function createWindow(preloadPath: string, startUrl: string, shouldStartHidden = false): BrowserWindow {
   const isDev = !app.isPackaged;
   // In dev: read from project assets folder
   // In production: extraResources are in process.resourcesPath/assets
@@ -94,6 +94,7 @@ export function createWindow(preloadPath: string, startUrl: string): BrowserWind
     autoHideMenuBar: true,
     icon: iconPath,
     title: 'نداء',
+    show: !shouldStartHidden, // Don't show window if starting hidden
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -103,6 +104,14 @@ export function createWindow(preloadPath: string, startUrl: string): BrowserWind
   });
 
   mainWindow.loadURL(startUrl);
+  
+  // If should start hidden, ensure window is hidden after load
+  if (shouldStartHidden) {
+    mainWindow.once('ready-to-show', () => {
+      // Don't show - keep hidden in background
+      console.log('[Window] Started hidden in background (system tray mode)');
+    });
+  }
   
   mainWindow.on('close', (event) => {
     if (!isQuitting) {

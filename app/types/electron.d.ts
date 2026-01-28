@@ -3,6 +3,9 @@ export {};
 declare global {
   interface Window {
     electron?: {
+      // Translations
+      getTranslations: (language: string, namespace: string) => Promise<Record<string, unknown>>;
+      
       // Settings
       getSettings: () => Promise<Settings>;
       updateSettings: (settings: Partial<Settings>) => Promise<Settings>;
@@ -48,6 +51,7 @@ export interface Settings {
   timeFormat: "12" | "24";
   notificationsEnabled: boolean;
   autoStart: boolean;
+  language: "ar" | "en";
   guideCompleted?: boolean;
 }
 

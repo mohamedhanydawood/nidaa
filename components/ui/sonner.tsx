@@ -8,13 +8,19 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useContext } from "react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { LanguageContext } from "@/lib/LanguageProvider"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  const languageContext = useContext(LanguageContext)
+  const language = languageContext?.language || "ar"
+  const isRTL = language === "ar"
 
   return (
     <Sonner
+      dir={isRTL ? "rtl" : "ltr"}
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{

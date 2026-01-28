@@ -1,0 +1,42 @@
+{
+  "fajr": "Fajr",
+  "fajrEn": "Fajr",
+  "dhuhr": "Dhuhr",
+  "dhuhrEn": "Dhuhr",
+  "asr": "Asr",
+  "asrEn": "Asr",
+  "maghrib": "Maghrib",
+  "maghribEn": "Maghrib",
+  "isha": "Isha",
+  "ishaEn": "Isha",
+  "sunrise": "Sunrise",
+  "sunriseEn": "Sunrise",
+  "nextPrayer": "Next Prayer",
+  "remaining": "Remaining",
+  "hour": "hour",
+  "minute": "minute",
+  "hours": "hours",
+  "minutes": "minutes",
+  "now": "It's time",
+  "todayPrayers": "Today's Prayers",
+  "checklist": "Checklist",
+  "weekRecord": "Week Record",
+  "marked": "Marked",
+  "notMarked": "Not Marked",
+  "abbreviations": {
+    "fajr": "F",
+    "dhuhr": "D",
+    "asr": "A",
+    "maghrib": "M",
+    "isha": "I"
+  },
+  "days": {
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  }
+}

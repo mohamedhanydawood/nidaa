@@ -1,0 +1,4 @@
+{
+  "preAlert": "{{prayer}} prayer is in {{minutes}} minutes",
+  "adhan": "It's time for {{prayer}} prayer"
+}

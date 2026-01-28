@@ -1,0 +1,58 @@
+{
+  "pageTitle": "Settings",
+  "appDescription": "Nidaa - Prayer Times App",
+  "location": {
+    "title": "Location",
+    "country": "Country",
+    "city": "City",
+    "selectCountry": "Select Country",
+    "selectCity": "Select City"
+  },
+  "prayerSettings": {
+    "title": "Prayer Settings",
+    "calculationMethod": "Calculation Method",
+    "madhab": "Madhab",
+    "notifyBefore": "Notify Before Adhan (minutes)",
+    "timeFormat": "Time Format",
+    "hour12": "12 hour",
+    "hour24": "24 hour"
+  },
+  "appSettings": {
+    "title": "App Settings",
+    "notifications": "Enable Notifications",
+    "autoStart": "Auto Start",
+    "language": "Language",
+    "arabic": "العربية",
+    "english": "English"
+  },
+  "testNotifications": {
+    "title": "Test Notifications",
+    "preAlert": "Test Pre-Adhan Alert",
+    "adhan": "Test Adhan Notification"
+  },
+  "updateCheck": {
+    "title": "App Updates",
+    "button": "Check for Updates",
+    "checking": "Checking for updates...",
+    "available": "Update available! Download will start automatically.",
+    "upToDate": "You're up to date!",
+    "error": "Failed to check for updates. Please try again later."
+  },
+  "messages": {
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Failed to save settings"
+  },
+  "methods": {
+    "mwl": "Muslim World League",
+    "isna": "Islamic Society of North America",
+    "egypt": "Egyptian General Authority of Survey",
+    "makkah": "Umm Al-Qura, Makkah",
+    "karachi": "University of Islamic Sciences, Karachi",
+    "tehran": "Institute of Geophysics, University of Tehran",
+    "jafari": "Shia Ithna-Ashari"
+  },
+  "madhabs": {
+    "shafi": "Shafi (Standard)",
+    "hanafi": "Hanafi"
+  }
+}

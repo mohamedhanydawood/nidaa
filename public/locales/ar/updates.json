@@ -1,0 +1,9 @@
+{
+  "updateDownloaded": "تم تحميل التحديث",
+  "restarting": "جاري إعادة التشغيل...",
+  "downloadingUpdate": "جاري تحميل التحديث",
+  "complete": "مكتمل",
+  "newUpdateAvailable": "تحديث جديد متاح",
+  "versionReady": "الإصدار {{version}} جاهز للتحميل",
+  "downloadNow": "تحميل الآن"
+}

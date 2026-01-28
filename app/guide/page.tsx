@@ -1,6 +1,11 @@
 "use client";
 
+import { useLanguage } from "@/lib/LanguageProvider";
+
 export default function GuidePage() {
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
+
   function handleStart() {
     // Mark guide as completed and go to home
     if (window.electron?.updateSettings) {
@@ -11,7 +16,7 @@ export default function GuidePage() {
   }
 
   return (
-    <div dir="rtl" className="h-screen text-foreground flex flex-col bg-linear-to-br from-background via-background to-accent/5">
+    <div dir={isRTL ? "rtl" : "ltr"} className="h-screen text-foreground flex flex-col bg-linear-to-br from-background via-background to-accent/5">
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">

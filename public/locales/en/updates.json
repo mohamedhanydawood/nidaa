@@ -1,0 +1,9 @@
+{
+  "updateDownloaded": "Update Downloaded",
+  "restarting": "Restarting...",
+  "downloadingUpdate": "Downloading Update",
+  "complete": "complete",
+  "newUpdateAvailable": "New Update Available",
+  "versionReady": "Version {{version}} ready to download",
+  "downloadNow": "Download Now"
+}

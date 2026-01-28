@@ -1,4 +1,5 @@
 import { Spinner } from "@/components/ui/spinner";
+import { useLanguage } from "../lib/LanguageProvider";
 
 type UpdateInfo = {
   available: boolean;
@@ -13,13 +14,16 @@ type UpdateBannerProps = {
 };
 
 export default function UpdateBanner({ updateInfo }: UpdateBannerProps) {
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
+  
   if (!updateInfo?.available) return null;
 
   if (updateInfo.downloaded) {
     return (
       <div className="col-span-1 md:col-span-12">
-        <div className="bg-green-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg animate-pulse">
-          <div className="flex items-center gap-3">
+        <div className="bg-green-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg animate-pulse" dir={isRTL ? "rtl" : "ltr"}>
+          <div className={`flex items-center gap-3 ${isRTL ? "flex-row" : ""}`}>
             <span className="text-2xl">✅</span>
             <div>
               <p className="font-semibold">تم تحميل التحديث {updateInfo.version}</p>
@@ -35,9 +39,9 @@ export default function UpdateBanner({ updateInfo }: UpdateBannerProps) {
   if (updateInfo.downloading) {
     return (
       <div className="col-span-1 md:col-span-12">
-        <div className="bg-blue-600 text-white rounded-lg p-4 shadow-lg">
+        <div className="bg-blue-600 text-white rounded-lg p-4 shadow-lg" dir={isRTL ? "rtl" : "ltr"}>
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-3 ${isRTL ? "flex-row" : ""}`}>
               <Spinner />
               <div>
                 <p className="font-semibold">جاري تحميل التحديث {updateInfo.version}</p>
@@ -58,8 +62,8 @@ export default function UpdateBanner({ updateInfo }: UpdateBannerProps) {
 
   return (
     <div className="col-span-1 md:col-span-12">
-      <div className="bg-yellow-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
+      <div className="bg-yellow-600 text-white rounded-lg p-4 flex items-center justify-between shadow-lg" dir={isRTL ? "rtl" : "ltr"}>
+        <div className={`flex items-center gap-3 ${isRTL ? "flex-row" : ""}`}>
           <span className="text-2xl">⚠️</span>
           <div>
             <p className="font-semibold">تحديث جديد متاح</p>
